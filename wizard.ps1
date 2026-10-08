@@ -34,6 +34,10 @@ function Refresh-Path { $env:Path = [Environment]::GetEnvironmentVariable('Path'
 function Has-Cmd($n) { [bool](Get-Command $n -ErrorAction SilentlyContinue) }
 function Mask($k){ $t=("$k").Trim(); if($t.Length -le 8){ return ('*' * $t.Length) }; return ($t.Substring(0,5) + '****' + $t.Substring($t.Length-4)) }
 
+# 复用「Claude Code 前置检测 / 自动修复」公共库（同一份代码，安装包 里的 .bat 也在用）
+$PrereqLib = Join-Path $Root '安装包\scripts\Prereq.ps1'
+if (Test-Path $PrereqLib) { . $PrereqLib; $ErrorActionPreference = 'SilentlyContinue' }
+
 $ST = @{ s1 = 'pending'; s2 = 'pending'; s3 = 'pending'; s4 = 'pending' }
 function SetS($k,$v){ $ST[$k] = $v }
 function Flush($phase,$detail){ Save-Status $phase $ST $detail }
@@ -43,16 +47,29 @@ Flush 'running' '正在体检当前环境...'
 
 # ---------- 第 1 步：Node.js ----------
 Log '[1/4] 检查 Node.js'
-if (Has-Cmd 'node') { Log ('已安装 ' + (& node -v) + '，跳过'); SetS 's1' 'ok'; Flush 'running' 'Node.js 已就绪' }
+$ni = Get-NodeInfo
+if ($ni.Found -and $ni.MeetsMin) { Log ('已安装 ' + $ni.Version + '（满足 >= ' + $script:PrereqMinNode + '），跳过'); SetS 's1' 'ok'; Flush 'running' 'Node.js 已就绪' }
 else {
+    if ($ni.Found) { Log ('现有 Node ' + $ni.Version + ' 低于要求 22，需要升级'); Flush 'running' ('第 1 步：Node.js ' + $ni.Version + ' 版本过低（Claude Code 要求 22 以上），正在装新版覆盖它') }
     if (Test-Path $NodeMsi) {
         SetS 's1' 'waiting'; Flush 'running' '第 1 步：安装窗口已弹出 —— 请到那个窗口一路点 Next/下一步（网页进度会自动更新）'
         Log '弹出 Node.js 安装窗口，等待你在那个窗口完成安装...'
         Start-Process -FilePath 'msiexec.exe' -ArgumentList @('/i', $NodeMsi, '/norestart') -Wait
         Refresh-Path
-        if (Has-Cmd 'node') { Log ('安装成功：' + (& node -v)); SetS 's1' 'ok'; Flush 'running' 'Node.js 安装成功' }
+        $ni = Get-NodeInfo
+        if ($ni.Found -and $ni.MeetsMin) { Log ('安装成功：' + $ni.Version); SetS 's1' 'ok'; Flush 'running' 'Node.js 安装成功' }
+        elseif ($ni.Found) { Log ('装完仍是 ' + $ni.Version + '（可能点了取消，或旧版没被替换）'); SetS 's1' 'error'; Flush 'running' 'Node.js 版本仍偏低：确认在安装窗口点了 Install；若提示已有旧版本，先去「卸载程序」卸掉旧 Node.js 再重跑向导' }
         else { Log '本窗口暂时认不到 node（可能要重开窗口）——稍后体检复确认'; SetS 's1' 'error'; Flush 'running' 'Node.js 没有确认装上：请稍后重跑向导，或手动双击 安装包\node-v22.23.3-x64.msi' }
-    } else { Log ('找不到安装包 ' + $NodeMsi); SetS 's1' 'error'; Flush 'running' '找不到 node 安装包：压缩包可能不完整，请重新解压' }
+    } else {
+        SetS 's1' 'waiting'; Flush 'running' '第 1 步：本机没有 Node 安装包，正在自动下载并安装（约 30MB，耐心等）'
+        Log '没有找到本地 node msi，走「自动下载 + 安装」流程...'
+        $nodeStub = New-Object psobject -Property @{ IsArm = ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') }
+        $okNode = Repair-NodePrereq $nodeStub $Root
+        Refresh-Path
+        $ni = Get-NodeInfo
+        if ($okNode -and $ni.Found -and $ni.MeetsMin) { Log ('自动安装成功：' + $ni.Version); SetS 's1' 'ok'; Flush 'running' 'Node.js 已自动装好' }
+        else { Log '自动安装未成功'; SetS 's1' 'error'; Flush 'running' 'Node.js 自动安装失败：请连上网重跑向导，或手动装 nodejs.org 的 LTS 版（向导首页有链接）' }
+    }
 }
 
 # ---------- 第 2 步：CC Switch（提前装好"换发动机"工具）----------
@@ -136,20 +153,30 @@ else {
 
 # ---------- 第 4 步：Claude Code（配置已就位，装完首启不卡登录）----------
 Log '[4/4] 检查 Claude Code'
+$nodeNow = Get-NodeInfo
+$npmNow  = Get-NpmInfo $nodeNow
 if (Has-Cmd 'claude') { Log ('已安装 ' + (& claude --version) + '，跳过'); SetS 's4' 'ok'; Flush 'running' 'Claude Code 已就绪' }
-elseif (-not (Has-Cmd 'node')) { Log 'Node 未就绪，跳过本步'; SetS 's4' 'error'; Flush 'running' '第 1 步没装好，本步跳过——先把 Node.js 装好再重跑向导' }
+elseif (-not ($nodeNow.Found -and $nodeNow.MeetsMin)) { Log 'Node 缺失或版本过低，跳过本步'; SetS 's4' 'error'; Flush 'running' '第 1 步没装好（Node.js 缺失或低于 22），本步跳过——先把 Node.js 装好再重跑向导' }
 else {
     SetS 's4' 'running'; Flush 'running' '第 4 步：正在从国内镜像安装 Claude Code（1~3 分钟，无需代理，耐心等）'
     Log '切换 npm 镜像为 npmmirror.com（国内 CDN，实测无代理直连 18 秒装完）'
-    & npm.cmd config set registry https://registry.npmmirror.com | Out-Null
+    $npmExe = 'npm.cmd'
+    if ($npmNow.Exe) { $npmExe = $npmNow.Exe }
+    & $npmExe config set registry https://registry.npmmirror.com | Out-Null
     Log '开始安装 @anthropic-ai/claude-code ...'
-    & npm.cmd install -g '@anthropic-ai/claude-code' 2>&1 | ForEach-Object {
+    & $npmExe install -g '@anthropic-ai/claude-code' 2>&1 | ForEach-Object {
         $line = "$_"
         if ($line.Trim()) { Log ('npm: ' + $line.Trim()); SetS 's4' 'running'; Flush 'running' '第 4 步：正在安装 Claude Code（看日志了解进度）' }
     }
     Refresh-Path
+    if (-not (Has-Cmd 'claude')) {
+        # 命令装上了但不在 PATH 里 —— 这是「装完敲不出 claude」的头号原因，自动补一下
+        $pathStub = New-Object psobject -Property @{ Node = $nodeNow; NpmPrefix = (Get-NpmPrefix $npmNow $nodeNow) }
+        Repair-NodePath $pathStub | Out-Null
+        Refresh-Path
+    }
     if (Has-Cmd 'claude') { Log ('安装成功：' + (& claude --version)); SetS 's4' 'ok'; Flush 'running' 'Claude Code 安装成功——配置已在第 3 步写好，直接打开即可用' }
-    else { Log '安装未确认成功（网络波动？）'; SetS 's4' 'error'; Flush 'running' 'Claude Code 没装上：重跑向导再试一次（若被校园网拦截可临时开代理），或看网页急救站' }
+    else { Log '安装未确认成功（网络波动？）'; SetS 's4' 'error'; Flush 'running' 'Claude Code 没装上：重跑向导再试一次（若被校园网拦截可临时开代理），或用 安装包\安装ClaudeCode-离线安装.bat（不联网也能装），或看网页急救站' }
 }
 
 # ---------- 收尾 ----------

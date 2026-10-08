@@ -95,9 +95,10 @@
 
 ### 3. 机器验收（不靠自觉打勾）
 
+- **前置体检与自愈（安装包/scripts/Prereq.ps1 + install-cc.ps1，v2.0 新增）**：把"装 Claude Code 会踩的坑"逐项检查并自动补齐——Node.js 是否安装且 **>= 22**（依据官方包 `engines.node`，不是老教程里的 18）、npm 是否可用、Node 与 npm 全局目录是否在 PATH（"装完敲不出 claude"的头号原因，自动写回用户 PATH 并刷新当前会话）、磁盘剩余空间、npmmirror/npmjs 可达性（不通自动回退）、离线包完整性、claude 是否已在运行、管理员权限（缺则自提权重启）；缺失的 Node 走「礼包自带 msi（校验 Authenticode 签名为 OpenJS Foundation）→ 华为云镜像下载 → winget」三级自动安装，装完复检并留 `安装日志-*.log`。三个入口：联网安装 / 离线安装 / 只检测环境（Check 模式零改动）
 - **密钥三级体检**：① 输入即校格式（`sk-` 前缀+长度，分别提示"复制了一半/贴成密码"）② 查余额（密钥有效自动勾选装机项并标验证；余额 0 提前预告 402）③ 点火测试（真发一条消息，展示回复+token 用量+折算费用——用户第一次直观看到计费）
 - **CLAUDE.md 拖拽验收**：FileReader 读文件，抓三个新手经典翻车点——文件名存成 `CLAUDE.md.txt`、编码存成 ANSI（检测 U+FFFD 替换符）、内容只贴一半；每个错误给具体修法；另有一键下载（Blob 直出）从根上杜绝
-- **体检助手（check-ai.ps1）**：探测 Node/claude 命令、Claude 桌面版与 CC Switch（目录+注册表双探测）、DSH 主目录；解析 `settings.json` 报告 Base URL 指向（还指着 api.anthropic.com 会点破"这就是登录墙根源"）、密钥掩码与格式；菜单支持一键写入推荐配置（时间戳备份）、联网体检、打开官方下载页
+- **体检助手（check-ai.ps1）**：探测 Node（含 **>= 22 版本闸门**）/npm/claude 命令、Claude 桌面版与 CC Switch（目录+注册表双探测）、DSH 主目录；解析 `settings.json` 报告 Base URL 指向（还指着 api.anthropic.com 会点破"这就是登录墙根源"）、密钥掩码与格式；菜单支持一键写入推荐配置（时间戳备份）、联网体检、打开官方下载页
 
 ### 4. 场景弹药库（可复制的提示词模板）
 
@@ -123,10 +124,16 @@ AI-Starter-Kit/
 ├── 启动我-AI开箱教室.html            # 教学程序（单文件、离线可用、进度存 localStorage）
 ├── 启动说明.txt                     # 一页纸说明
 ├── 安装包/
-│   ├── node-v22.23.3-x64.msi       # 华为云镜像
+│   ├── node-v22.23.3-x64.msi       # 华为云镜像（Authenticode 验证：OpenJS Foundation）
 │   ├── CC-Switch-v4.0.4-Windows.msi # GitHub Release，sha256 已比对
+│   ├── claude-code-offline/         # Claude Code 离线副本（2.1.293，约 245MB）
+│   ├── scripts/
+│   │   ├── Prereq.ps1              # 前置检测/自动修复公共库（wizard.ps1 也复用）
+│   │   └── install-cc.ps1          # 安装主流程：Online / Offline / Check 三模式
 │   ├── 安装ClaudeCode-一键联网安装.bat
-│   └── 安装说明.txt                 # 手动五步 + Plan C 一行命令
+│   ├── 安装ClaudeCode-离线安装.bat
+│   ├── 安装ClaudeCode-只检测环境.bat # 纯体检，零改动
+│   └── 安装说明.txt                 # 体检项清单 + 手动五步 + Plan C 一行命令
 ├── 配套文件/
 │   ├── AI装机体检助手-双击我.bat     # 独立体检程序入口
 │   ├── check-ai.ps1                # 体检逻辑（真读系统与配置）
@@ -155,7 +162,7 @@ wizard.ps1 ──每步写入──▶ wizard-status.js   （内容：window.WIZ
 
 | 依赖 | 来源 | 实测 |
 |---|---|---|
-| Node.js | 华为云镜像 | 国内直连 |
+| Node.js | 华为云镜像（礼包自带同名 msi，脚本缺失时自动下载同一地址） | 国内直连 |
 | CC Switch | 已打进压缩包（sha256 比对官方 Release） | 无需网络 |
 | Claude Code | npmmirror（registry + 平台二进制子包全量同步） | **无代理直连 18 秒装完，含 245MB win32 二进制** |
 | DeepSeek API | api.deepseek.com | 国内直连 |
@@ -163,7 +170,7 @@ wizard.ps1 ──每步写入──▶ wizard-status.js   （内容：window.WIZ
 | 级别 | 方案 | 触发条件 |
 |---|---|---|
 | Plan A | 双击开箱向导，全自动 | 正常情况 |
-| Plan B | 按 安装包/安装说明.txt 手动双击 ①→⑤ | bat 被杀软拦截/向导异常 |
+| Plan B | 按 安装包/安装说明.txt 手动双击 ①→⑤；或直接双击 安装包/安装ClaudeCode-一键联网安装.bat（自带前置体检与自动补装），没网用 安装ClaudeCode-离线安装.bat，只想看缺什么用 安装ClaudeCode-只检测环境.bat | bat 被杀软拦截/向导异常 |
 | Plan C | 装 Node 后，cmd 里右键粘贴一行 `npm config set registry https://registry.npmmirror.com && npm install -g @anthropic-ai/claude-code` | 一切脚本都跑不动时（该命令只依赖第 1 步装好的 npm） |
 
 npm 需不需要代理？——**不需要**（上表实测数据）；若被校园网/公司网拦截，临时开代理重跑即可。
@@ -199,12 +206,12 @@ npm 需不需要代理？——**不需要**（上表实测数据）；若被校
 
 **Q：和直接用网页版 DeepSeek 有什么区别？** 网页版是聊天（免费），本工具包装的是 Agent（能操作你文件夹里的文件、交付成品）。日常问答用免费 App，干活用 Agent——费用课里专门教了这套分工。
 
-**Q：我对 PowerShell 脚本不放心？** 全部源码在仓库里明文可审（`wizard.ps1`/`check-ai.ps1`），只读写本文件夹与 `~/.claude` 标准配置。
+**Q：我对 PowerShell 脚本不放心？** 全部源码在仓库里明文可审（`wizard.ps1`/`check-ai.ps1`/`安装包/scripts/*.ps1`），只读写本文件夹、用户 PATH 与 `~/.claude` 标准配置；装 Node 用的 msi 会在安装前校验数字签名，`安装ClaudeCode-只检测环境.bat` 是零改动模式，可以先跑它看脚本都查了什么。
 
 ## 版本与时效
 
 - 价格与软件版本核实于 **2026-10**：DeepSeek 现役模型 `deepseek-flash` / `deepseek-v4-pro`；权威价格以[官方定价页](https://api-docs.deepseek.com/zh-cn/quick_start/pricing)为准
-- CC Switch v4.0.4（2026-10-07 发布）；Node.js v22.23.3 LTS；Claude Code 2.1.292+（脚本安装当时最新）
+- CC Switch v4.0.4（2026-10-07 发布）；Node.js v22.23.3 LTS；Claude Code 2.1.292+（脚本安装当时最新；前置门槛按官方 `engines.node >= 22` 写死，不随版本漂移）
 
 ## 致谢
 

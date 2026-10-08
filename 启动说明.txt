@@ -2,8 +2,9 @@
 
 你只需要做一件事：
 >>> 双击「①先双击我-开箱向导.bat」<<<
-它会自动检测缺什么、依次自动安装（Node.js → Claude Code → CC Switch）、
-引导你贴一次 API 密钥、最后自动打开教学页面。全程只需按回车 + 点"下一步"。
+它会自动检测缺什么（Node.js 装没装、版本够不够 22、网络通不通）、
+依次自动安装（Node.js → Claude Code → CC Switch）、引导你贴一次 API 密钥、
+最后自动打开教学页面。全程只需按回车 + 点"下一步"。
 装过的会自动跳过，出问题随时重跑一遍即可。
 
 之后的学习和使用：
@@ -13,9 +14,12 @@
 
 文件夹里的其他东西（向导会自动用到，一般不用手动碰）：
 - 安装包\                            → 已替你下好的离线安装包（Claude Code 不用碰 GitHub）：
-      ① node-v22.23.3-x64.msi（双击装，Claude Code 的地基）
-      ② 安装ClaudeCode-一键联网安装.bat（装完①后双击，国内镜像自动装 Claude Code）
-      ③ CC-Switch-v4.0.4-Windows.msi（双击装，给 Claude Code 换发动机用）
+      ① node-v22.23.3-x64.msi（Claude Code 的地基；也可以跳过——③ 检测到没装会自己帮你装）
+      ② CC-Switch-v4.0.4-Windows.msi（双击装，给 Claude Code 换发动机用）
+      ③ 安装ClaudeCode-一键联网安装.bat（双击就跑：先体检 Node/npm/PATH/网络/磁盘，
+         缺什么自动替你补上（含 Node.js 本体），再联网装 Claude Code，最后验证一遍；
+         每次都在同目录留一份"安装日志-*.log"，出问题把它发给人看）
+      ④ 安装ClaudeCode-离线安装.bat（没网时用）／安装ClaudeCode-只检测环境.bat（只体检不安装）
       顺序和说明详见 安装包\安装说明.txt
 - 配套文件\AI装机体检助手-双击我.bat   → 真正的体检程序：检查软件装没装、配置对不对、
                                         密钥有没有效（还能一键写入推荐配置、打开官方下载页）

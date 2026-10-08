@@ -2,3 +2,10 @@ wizard-status.js
 *.zip
 Thumbs.db
 desktop.ini
+
+# Claude Code 离线副本：内含 244MB 原生二进制（claude.exe），
+# 超过 GitHub 单文件 100MB 硬上限，只随发行压缩包分发，不进 git
+安装包/claude-code-offline/
+
+# 安装脚本运行时生成的日志
+安装包/安装日志-*.log

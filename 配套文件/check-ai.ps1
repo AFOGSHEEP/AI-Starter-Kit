@@ -18,7 +18,7 @@ function OK($t){ W 'Green'  ("  [OK] " + $t) }
 function BAD($t){ W 'Red'    ("  [X ] " + $t) }
 function WARN($t){ W 'Yellow' ("  [!!] " + $t) }
 function INFO($t){ W 'Gray'  ("       " + $t) }
-function H($t){ Write-Host ""; W 'Cyan' ('==== ' + $t + ' ====') }
+function Section($t){ Write-Host ""; W 'Cyan' ('==== ' + $t + ' ====') }
 function Pause-Here { INFO '（按回车键继续...）'; $null = Read-Host }
 
 function Mask($k){ if(-not $k){return '(空)'}; $t=$k.Trim(); if($t.Length -le 8){ return ('*' * $t.Length) }; return ($t.Substring(0,5) + '****' + $t.Substring($t.Length-4)) }
@@ -48,12 +48,22 @@ function Full-Check {
     W 'Cyan' '=================================================='
     $issues = 0
 
-    H '第 1 部分 · 软件装了没有'
+    Section '第 1 部分 · 软件装了没有'
 
-    # 1 Node.js
+    # 1 Node.js（命令行版 Claude Code 的地基：官方要求 node >= 22）
     $node = Get-Command node -ErrorAction SilentlyContinue
-    if ($node) { $nv = (& node -v 2>$null); OK ("Node.js 已安装 " + $nv + "（Claude Code 桌面版不依赖它；命令行版需要）") }
-    else { WARN 'Node.js 未安装（只用桌面版 + CC Switch 的话可以不管它）' }
+    if ($node) {
+        $nv = ([string](& node -v 2>$null)).Trim()
+        $nodeOkVer = $false
+        if ($nv -match '^v?(\d+)\.(\d+)') { if ([int]$Matches[1] -ge 22) { $nodeOkVer = $true } }
+        if ($nodeOkVer) { OK ("Node.js 已安装 " + $nv + "（满足 Claude Code 要求的 22 以上）") }
+        else { BAD ("Node.js 版本过低：" + $nv + " —— Claude Code 要求 22 以上，npm 会拒绝安装或装完起不来。修法：双击 安装包\安装ClaudeCode-一键联网安装.bat（会自动升级 Node）"); $issues++ }
+    }
+    else { WARN 'Node.js 未安装（只用桌面版 + CC Switch 可以不管它；要命令行版就双击 安装包\安装ClaudeCode-一键联网安装.bat，它会自动装好 Node 再装 Claude Code）' }
+
+    # 1b npm（Node 自带；单独缺了通常是 PATH 或安装不完整）
+    $npmCmd = Get-Command npm.cmd -ErrorAction SilentlyContinue
+    if ($node -and -not $npmCmd) { WARN 'npm 命令不在 PATH 里 —— 重跑 安装包\安装ClaudeCode-一键联网安装.bat 可以自动修复（它会把 npm 全局目录补进 PATH）' }
 
     # 2 Claude Code CLI
     $cc = Get-Command claude -ErrorAction SilentlyContinue
@@ -86,7 +96,7 @@ function Full-Check {
     elseif (Get-Command dsh -ErrorAction SilentlyContinue) { OK '检测到 dsh 命令' }
     else { WARN '未检出 DSH —— 它是选装的体验项目（教学程序第 3 步），不影响 Claude Code 使用' }
 
-    H '第 2 部分 · 配置写对没有（这才是关键）'
+    Section '第 2 部分 · 配置写对没有（这才是关键）'
 
     if (-not (Test-Path $ClaudeDir)) { BAD ('连 .claude 文件夹都不存在（' + $ClaudeDir + '）—— 先装 Claude Code，再用 CC Switch 写入配置，或用本助手菜单 1 一键写入'); $issues++ }
     else {
@@ -114,7 +124,7 @@ function Full-Check {
         }
     }
 
-    H '体检结论'
+    Section '体检结论'
     if ($issues -eq 0) { W 'Green' '  全绿！你的 Claude Code + DeepSeek 链路配置正确，可以开工了。' }
     else { W 'Yellow' ('  发现 ' + $issues + ' 个需要处理的问题。按上面的提示逐条解决，或用下面的菜单。') }
     W 'Gray' '  提示：本检测为尽力而为（自定义安装路径可能漏检）。最终标准：Claude Code 里发一句「你好」能收到回复。'
