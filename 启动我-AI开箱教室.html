@@ -495,14 +495,14 @@ const SETUP=[
  pre:{t:"📖 先花 1 分钟搞懂：为什么国内用 Claude Code 必须走 CC Switch？",
   b:"① <b>出厂设定走不通</b>：Claude Code 默认要登录 Anthropic 账号 + 官方 API 付费——国内既付不了款，也有政策风险，直接打开永远卡在登录页；<br>② <b>连官网都进不去</b>：claude.ai 对国内网络直接返回「region unavailable」（我们实测过）——所以第①项用离线安装包装本体，不走官网；<br>③ <b>装上也不能直连</b>：必须「换发动机」——把它的请求指向 <b>DeepSeek 的 Anthropic 兼容端点</b>（<code>https://api.deepseek.com/anthropic</code>）+ 你的 sk- 密钥，壳还是 Claude Code，脑子换成 DeepSeek；<br>④ <b>手动换发动机是灾难</b>：配置藏在 <code>~/.claude/settings.json</code> 和环境变量里——背路径、懂 JSON、错一个字符全盘罢工；<br>⑤ <b>所以 CC Switch 是国内玩家的事实标准</b>：开源图形化配置管家，内置 DeepSeek 预设，点几下就把正确配置写进 Claude Code，以后想换 GLM 也一键切换。<b>本向导只教这一条路</b>，其他野路子见急救站。"},
  items:[
- {id:"s2a",t:"安装 <b>Claude Code 本体</b>（离线包已备好）：打开「安装包」文件夹 → ① 双击 <code>node-v22.23.3-x64.msi</code>（地基，一路下一步）→ ② 双击 <code>安装ClaudeCode-一键联网安装.bat</code>（国内镜像，1~3 分钟）。<b>装出来是黑色终端窗口——正常！以后就是打字对话，不写代码</b>"},
- {id:"s2b",t:"安装 <b>CC Switch</b>：「安装包」里的 <code>CC-Switch-v4.0.4-Windows.msi</code>（官方 Release，已做 sha256 校验），双击一路下一步。装完桌面/开始菜单会有它的图标"},
+ {id:"s2a",t:"<b>先装 CC Switch</b>（顺序很重要，先把换发动机的工具备好）：「安装包」里的 <code>CC-Switch-v4.0.4-Windows.msi</code>（官方 Release，已做 sha256 校验），双击一路下一步。为什么先装它？——等下配好密钥再装 Claude Code，它第一次打开就能直接用、不会卡在登录页"},
+ {id:"s2b",t:"再装 <b>Claude Code 本体</b>：打开「安装包」文件夹 → ① 双击 <code>node-v22.23.3-x64.msi</code>（地基，一路下一步）→ ② 双击 <code>安装ClaudeCode-一键联网安装.bat</code>（国内镜像 npmmirror，实测无代理 18 秒装完，不需要魔法上网）。<b>装出来是黑色终端窗口——正常！装完先别打开</b>，配置完 s2c 再首启"},
  {id:"s2c",t:"<b>重点：CC Switch 添加 DeepSeek（手把手）</b>：<br>① 打开 CC Switch，认准主界面右上角的 <b>「＋/ 添加供应商」</b>按钮<br>② 名称随意填（如 DeepSeek）；预设列表选 <b>DeepSeek</b>（没有预设就选 API 类型 <b>Anthropic</b>）<br>③ Base URL 应自动填为 <code>https://api.deepseek.com/anthropic</code> <button class='btn ghost cpy' data-copy='https://api.deepseek.com/anthropic'>复制</button>（没自动填就粘贴）<br>④ API Key：粘贴你的 sk- 密钥<br>⑤ 点 <b>保存</b>，再点该供应商的 <b>「启用 / 切换」</b>，让它变成当前生效<br>⑥ 版本不同按钮位置略有差异——认准「添加供应商」四个字就行"},
- {id:"s2d",t:"验收：打开/重启 Claude Code（终端输入 <code>claude</code> 回车），发送“你好，请用一句话介绍你自己”——收到中文回复 = 换发动机成功 🎉"},
+ {id:"s2d",t:"验收（此刻配置已就位）：打开 Claude Code（终端输入 <code>claude</code> 回车），发送“你好，请用一句话介绍你自己”——<b>不会要求登录</b>，收到中文回复 = 换发动机成功 🎉（如果它要求登录/选主题，说明配置没写进去，去急救站）"},
  {id:"s2e",t:"双击配套文件的「<b>AI装机体检助手</b>」复查——它会真读你的 settings.json，确认地址已指向 DeepSeek、密钥格式正确，全绿 ✔ 才算毕业"}],
  note:"📌 <b>三个补充说明</b>：① CC Switch 切换供应商时会<b>整体重写</b> settings.json（自定义字段可能被清——体检助手每次写入前自动备份，正好兜住这个已知 bug）；② CC Switch 的本地路由模式下，模型名<b>别手动加 [1m] 后缀</b>，预设已配好；③ 开箱向导第 4 步和 CC Switch 写的是<b>同一个配置文件</b>，谁后执行谁生效，不冲突——推荐以后统一用 CC Switch 管理。"},
 {id:"s3",em:"🧩",title:"第 3 步 · 装 DSH 桌面版（DeepSeek 亲儿子，玩插件）",items:[
- {id:"s3a",t:"下载安装（三选一）：① GitHub 搜 <code>rye567/dsh-desktop</code> 的 Releases 页下载 Windows 安装包（启动即用，自动装好一切）；② 微软商店搜「DSH Desktop (Community)」；③ DeepSeek 官网公告的官方桌面预览版（需实名+账户余额）"},
+ {id:"s3a",t:"下载安装（按顺序优先）：① <b>官网</b>：<code>www.deepseek.com</code> 首页点 <b>Download Desktop</b>（DeepSeek 官方桌面版，国内直连，需实名认证+账户有余额）；② <b>微软商店</b>：搜「DSH Desktop (Community)」（商店也国内直达）；③ 实在不行再找 GitHub 的 <code>deepseek-ai</code> 官方组织。认准官方渠道，别下第三方仿冒包"},
  {id:"s3b",t:"首次启动后进入 <b>Settings → Models</b>，在 DeepSeek 卡片里粘贴你的 API Key 并保存"},
  {id:"s3c",t:"验收：随便发一个任务，比如“帮我把这段话改成一封正式邮件：【随便贴一段】”"}],
  note:"DSH（DeepSeek Harness）是 DeepSeek 官方开源的 Agent 运行环境，口号“万物皆插件”——以后可以慢慢装文献、表格类插件扩展能力。两个软件共用同一把 Key、同一个余额。"},
@@ -588,6 +588,7 @@ const HELPS=[
 {t:"价格会不会变？哪里查权威价格？",b:"会变。本教室价格核实于 2026 年 10 月，权威价格永远看官方：<code>api-docs.deepseek.com/zh-cn/quick_start/pricing</code>。涨价一般提前公告，学生用量级影响很小。"},
 {t:"什么是 .md 文件？我打不开它",b:".md = Markdown = “带格式的记事本”，用记事本/任意文本编辑器都能打开。你唯一会遇到的 .md 是 CLAUDE.md（AI 人设文件），装机向导第 4 步有手把手教学。其余 .md 一律不用管。"},
 {t:"双击「①先双击我-开箱向导.bat」没反应 / 一闪而过 / 被拦截？",b:"依次试：① 杀毒软件提示时选「允许」——它只读取本文件夹并调用官方安装包，不碰其他任何东西；② 右键该文件 → 以管理员身份运行；③ 还不行就双击 配套文件\AI装机体检助手-双击我.bat（功能基本等价：体检+一键写入配置+打开下载页）；④ 完全手动路线：看 安装包\安装说明.txt，按 ①②③ 顺序双击即可。"},
+{t:"打开 claude 就要登录 / 选主题，卡住了？",b:"这说明配置没写进去（或被重置）。修法：① 打开 CC Switch，把 DeepSeek 供应商重新点一次「启用/切换」→ 保存 → 再开 claude；② 或跑 AI装机体检助手 → 菜单 1 重写配置（自动备份旧的）；③ 再不行，体检助手「第 2 部分」会显示你的 settings.json 里到底写了啥。记住口诀：<b>先配好，再首启</b>。"},
 {t:"自检台/查余额提示“网络直连未成功”，是我配置错了吗？",b:"大概率不是。浏览器直连 API 可能被网络代理或浏览器对本地页面的跨域策略拦住——<b>这不代表你的密钥有问题</b>。兜底验证法永远有效：打开 Claude Code 发一句“你好”，能收到回复 = 配置成功。"},
 {t:"在教学程序里输入 API Key 安全吗？",b:"本程序是完全离线的本地网页：密钥只存在当前页面的内存里，<b>关闭页面即消失</b>，不写入任何文件、不发给任何第三方——验证请求由你的浏览器直接发往 DeepSeek 官方域名 api.deepseek.com。公用电脑上用完记得关页面即可。"},
 {t:"「AI装机体检助手」是什么？怎么用？",b:"工具包配套文件里的<b>真·体检程序</b>（双击「AI装机体检助手-双击我.bat」运行）。它直接检查你的电脑：① 装没装 Claude Code / CC Switch / DSH（含命令行和注册表探测）；② 真的读取 <code>~/.claude/settings.json</code> 检查服务器地址和密钥（密钥掩码显示）——如果地址还指向 api.anthropic.com，它会告诉你这就是「要求登录」的根源；③ 可选联网体检：验证密钥、查余额、发一条真实测试消息。还能一键写入推荐配置（自动备份旧的）、直接打开各软件官方下载页。装机第 2、3 步完成后各跑一遍，全绿 ✔ 就稳了。它只在本机运行，密钥仅用于直连 DeepSeek 官方接口。"},
@@ -813,7 +814,7 @@ function refresh(){
 refresh();
 
 /* ================= 开箱实况：与 wizard.ps1 状态文件联动 ================= */
-const WSTEPS=[{n:1,em:"🧱",t:"Node.js 运行环境"},{n:2,em:"🤖",t:"Claude Code 本体"},{n:3,em:"🔀",t:"CC Switch 换发动机工具"},{n:4,em:"🔑",t:"DeepSeek 密钥配置"}];
+const WSTEPS=[{n:1,em:"🧱",t:"Node.js 运行环境"},{n:2,em:"🔀",t:"CC Switch 换发动机工具"},{n:3,em:"🔑",t:"DeepSeek 密钥配置"},{n:4,em:"🤖",t:"Claude Code 本体"}];
 const WLAB={pending:"待开始",running:"进行中…",waiting:"🖱️ 等你在弹出的安装窗口里点「下一步」",need_key:"🔑 等你粘贴密钥（看下方教学卡）",ok:"✅ 完成",skipped:"⏭ 已跳过（以后可配）",error:"❌ 没成功——结束后看急救指引"};
 let wizTimer=null,wizKeyShown=false;
 function wizLoad(cb,errCb){
@@ -837,7 +838,7 @@ function renderWizard(st){
  }).join("");
  const lg=$("#wizlog");
  if(st.log&&st.log.length){lg.style.display="block";const atBottom=lg.scrollTop+lg.clientHeight>=lg.scrollHeight-30;lg.textContent=st.log.join("\n");if(atBottom)lg.scrollTop=lg.scrollHeight}
- const needKey=(st.steps||{}).s4==="need_key";
+ const needKey=(st.steps||{}).s3==="need_key";
  if(needKey&&!wizKeyShown){wizKeyShown=true;$("#wizkey").style.display="block";$("#wizkey").scrollIntoView({behavior:"smooth",block:"start"})}
  if(!needKey)$("#wizkey").style.display="none";
  if(st.phase==="done"){$("#wizdone").style.display="block";$("#wizdonetext").textContent=st.detail||"环境已就绪。接下来：①「课程」把概念过一遍 → ②「场景弹药库」抄第一个作业。"}
@@ -857,7 +858,7 @@ function sideLive(st){
  $("#side-live").style.display="block";$("#side-plan").style.display="none";
  let a,cls="sa-run";
  if(st.phase==="done"){a="✅ 开箱流程结束——全绿就直接点上方「课程」开始学习；有 ❌ 就去「急救站」";cls="sa-ok"}
- else if((st.steps||{}).s4==="need_key"){a="🔑 你要做的：去拿密钥——主页面有图文教学卡和平台入口；拿到后回黑色窗口右键粘贴";cls="sa-key"}
+ else if((st.steps||{}).s3==="need_key"){a="🔑 你要做的：去拿密钥——主页面有图文教学卡和平台入口；拿到后回黑色窗口右键粘贴";cls="sa-key"}
  else if(Object.values(st.steps||{}).includes("waiting")){a="🖱️ 你要做的：去刚弹出的安装窗口，一路点「下一步」，装完自动继续";cls="sa-wait"}
  else{a="☕ 自动进行中，你什么都不用做，看下面的步骤变绿就行"}
  $("#side-action").innerHTML=a;

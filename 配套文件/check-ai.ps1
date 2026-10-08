@@ -204,7 +204,7 @@ function Open-Downloads {
     switch ($c) {
         '1' { Start-Process 'https://claude.ai/download' }
         '2' { Start-Process 'https://github.com/farion1231/cc-switch/releases' }
-        '3' { Start-Process 'https://github.com/rye567/dsh-desktop/releases' }
+        '3' { Start-Process 'https://www.deepseek.com' }
         '4' { Start-Process 'https://platform.deepseek.com' }
     }
     INFO '浏览器已打开；下载安装完成后，回本助手重新体检（菜单 4）。'
@@ -230,3 +230,4 @@ while ($true) {
     }
 }
 W 'Cyan' '再见！记住：最终验收 = Claude Code 里发「你好」能收到回复。'
+
