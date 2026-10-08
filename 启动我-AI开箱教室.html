@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 开箱教室 · 医学研究生的第一堂 Agent 课</title>
+<style>
+:root{
+  --teal:#0d9488; --teal-d:#0f766e; --teal-l:#ccfbf1; --ink:#0f172a; --sub:#475569;
+  --bg:#f1f5f9; --card:#ffffff; --line:#e2e8f0; --warn:#f59e0b; --warn-l:#fef3c7;
+  --red:#dc2626; --red-l:#fee2e2; --ok:#16a34a; --ok-l:#dcfce7; --blue:#2563eb; --blue-l:#dbeafe;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.75}
+header{background:linear-gradient(135deg,#0f766e,#0d9488 60%,#0891b2);color:#fff;padding:22px 18px 16px}
+.hwrap{max-width:980px;margin:0 auto}
+header h1{font-size:24px;letter-spacing:1px;display:flex;align-items:center;gap:10px}
+header p{opacity:.92;font-size:14px;margin-top:2px}
+.pbarwrap{margin-top:12px;background:rgba(255,255,255,.25);border-radius:99px;height:14px;position:relative;overflow:hidden}
+.pbar{height:100%;width:0;background:#fff;border-radius:99px;transition:width .5s}
+.ptxt{font-size:12px;margin-top:4px;opacity:.95}
+nav{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:center;gap:4px;padding:6px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(15,23,42,.05)}
+nav button{border:0;background:none;padding:9px 16px;font-size:15px;border-radius:10px;cursor:pointer;color:var(--sub);font-family:inherit}
+nav button.on{background:var(--teal);color:#fff;font-weight:600}
+nav button:hover:not(.on){background:var(--teal-l)}
+main{max-width:980px;margin:18px auto 60px;padding:0 14px}
+.page{display:none}.page.on{display:block;animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:16px;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+h2.pt{font-size:20px;margin-bottom:4px;display:flex;gap:8px;align-items:center}
+p.lead{color:var(--sub);font-size:14px;margin-bottom:6px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.step{border-left:4px solid var(--teal);padding:14px 18px;background:#fff;border-radius:0 14px 14px 0;box-shadow:0 1px 3px rgba(15,23,42,.05);margin-bottom:14px}
+.step h3{font-size:16px;margin-bottom:6px}
+.badge{display:inline-block;font-size:12px;padding:2px 10px;border-radius:99px;background:var(--teal-l);color:var(--teal-d);font-weight:600;margin-left:6px;vertical-align:2px}
+.box{border-radius:12px;padding:12px 16px;margin:10px 0;font-size:14.5px}
+.box b{display:block;margin-bottom:4px}
+.analogy{background:var(--blue-l);border:1px solid #bfdbfe}
+.analogy b{color:var(--blue)}
+.warnbox{background:var(--warn-l);border:1px solid #fde68a}
+.warnbox b{color:#b45309}
+.dangerbox{background:var(--red-l);border:1px solid #fecaca}
+.dangerbox b{color:var(--red)}
+.okbox{background:var(--ok-l);border:1px solid #bbf7d0}
+.okbox b{color:var(--ok)}
+code,.mono{font-family:Consolas,"Courier New",monospace;background:#f1f5f9;padding:1px 6px;border-radius:6px;font-size:13.5px;word-break:break-all}
+pre{background:#0f172a;color:#e2e8f0;border-radius:12px;padding:14px 16px;font-size:13.5px;overflow-x:auto;font-family:Consolas,monospace;line-height:1.6;margin:10px 0;white-space:pre-wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--teal);color:#fff;padding:9px 18px;border-radius:10px;cursor:pointer;font-size:14px;font-family:inherit;font-weight:600}
+.btn:hover{background:var(--teal-d)}
+.btn.ghost{background:#fff;color:var(--teal-d);border:1.5px solid var(--teal)}
+.btn.blue{background:var(--blue)}
+.copywrap{position:relative}
+.lesson{margin-bottom:14px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+.lesson>.lhead{display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer;user-select:none}
+.lesson>.lhead:hover{background:#f8fafc}
+.lhead .em{font-size:26px}
+.lhead .t{flex:1}
+.lhead .t h3{font-size:16.5px}
+.lhead .t small{color:var(--sub)}
+.lhead .st{font-size:12px;padding:3px 10px;border-radius:99px;background:#f1f5f9;color:var(--sub);white-space:nowrap}
+.lesson.done .st{background:var(--ok-l);color:var(--ok);font-weight:700}
+.lbody{display:none;padding:4px 20px 18px;border-top:1px dashed var(--line)}
+.lesson.open .lbody{display:block}
+.quiz{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:12px}
+.quiz h4{font-size:14.5px;color:var(--teal-d);margin-bottom:8px}
+.qitem{margin-bottom:14px;padding-bottom:6px}
+.qitem .q{font-weight:600;font-size:14.5px;margin-bottom:6px}
+.opt{display:block;margin:5px 0;padding:8px 12px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;font-size:14px;background:#fff;transition:.15s}
+.opt:hover{border-color:var(--teal)}
+.opt.right{border-color:var(--ok);background:var(--ok-l);font-weight:600}
+.opt.wrong{border-color:var(--red);background:var(--red-l)}
+.qexp{font-size:13px;color:var(--sub);display:none;margin-top:4px}
+label.chk{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border:1.5px solid var(--line);border-radius:12px;margin:8px 0;cursor:pointer;font-size:14.5px;background:#fff}
+label.chk:hover{border-color:var(--teal)}
+label.chk input{width:19px;height:19px;accent-color:var(--teal);margin-top:3px;flex-shrink:0}
+label.chk.cdone{background:var(--ok-l);border-color:var(--ok)}
+label.chk.cdone span{text-decoration:line-through;color:var(--sub)}
+.sccard{border:1px solid var(--line);border-radius:16px;padding:18px 20px;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+.sccard h3{font-size:16px;display:flex;align-items:center;gap:8px}
+.sccard .tag{font-size:12px;background:var(--blue-l);color:var(--blue);padding:2px 10px;border-radius:99px;font-weight:600}
+.sccard p{font-size:14px;color:var(--sub);margin:8px 0}
+.costrow{display:flex;align-items:center;gap:10px;margin:14px 0;flex-wrap:wrap}
+.costrow input[type=range]{flex:1;min-width:160px;accent-color:var(--teal)}
+.costrow .val{font-weight:700;color:var(--teal-d);min-width:90px}
+select{padding:8px 12px;border-radius:10px;border:1.5px solid var(--line);font-size:14px;font-family:inherit;background:#fff}
+.bignum{font-size:42px;font-weight:800;color:var(--teal-d);line-height:1.2}
+.cmpbar{margin:8px 0}
+.cmpbar .lab{display:flex;justify-content:space-between;font-size:13px;color:var(--sub)}
+.cmpbar .bar{height:12px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:3px}
+.cmpbar .fill{height:100%;border-radius:99px}
+details{border:1px solid var(--line);border-radius:12px;margin:10px 0;background:#fff;overflow:hidden}
+details summary{padding:13px 16px;cursor:pointer;font-weight:600;font-size:14.5px;list-style:none;display:flex;gap:8px;align-items:center}
+details summary::before{content:"▸";color:var(--teal);transition:.2s}
+details[open] summary::before{transform:rotate(90deg)}
+details .dbody{padding:0 18px 14px;font-size:14px;color:var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin:10px 0}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+th{background:var(--teal-l);color:var(--teal-d)}
+footer{text-align:center;color:var(--sub);font-size:12.5px;padding:24px 14px;border-top:1px solid var(--line);background:#fff}
+.hero{background:linear-gradient(135deg,#0f766e,#0891b2);border-radius:18px;color:#fff;padding:28px 26px;margin-bottom:16px}
+.hero h2{font-size:22px;margin-bottom:8px}
+.hero p{font-size:14.5px;opacity:.95}
+.toast{position:fixed;left:50%;bottom:36px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 22px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:.3s;z-index:99}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:640px){header h1{font-size:19px}.bignum{font-size:32px}}
+.vmark{font-size:11px;color:var(--blue);font-weight:700;margin-left:6px;white-space:nowrap}
+.dropzone{border:2px dashed var(--teal);border-radius:12px;padding:14px 16px;margin-top:12px;font-size:13.5px;color:var(--teal-d);cursor:pointer;text-align:center;background:#f0fdfa}
+.dropzone:hover,.dropzone.drag{background:var(--teal-l)}
+.wstep{border-radius:12px;padding:12px 16px;font-size:14px;margin:8px 0}
+.wstep.run{animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.62}}
+.wlogbox{background:#0f172a;color:#a5f3fc;border-radius:12px;padding:12px 16px;font-size:12.5px;max-height:220px;overflow:auto;font-family:Consolas,monospace;line-height:1.7;white-space:pre-wrap}
+.layout{max-width:1300px;margin:0 auto;display:flex;gap:16px;align-items:flex-start;padding:0 14px}
+.layout>main{max-width:980px;margin:18px 0 60px;padding:0;flex:1;min-width:0}
+#sidebar{width:274px;flex-shrink:0;position:sticky;top:60px;display:flex;flex-direction:column;gap:12px}
+.sidecard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 1px 3px rgba(15,23,42,.06);font-size:13.5px}
+.sidecard h3{font-size:15px;margin-bottom:8px}
+.sideaction{border-radius:12px;padding:12px 14px;font-size:14px;font-weight:600;line-height:1.65;margin:8px 0}
+.sa-run{background:var(--teal-l);border:1.5px solid var(--teal);animation:pulse 1.8s infinite}
+.sa-wait{background:var(--warn-l);border:1.5px solid var(--warn)}
+.sa-key{background:#ede9fe;border:1.5px solid #7c3aed;animation:pulse 1.4s infinite}
+.sa-ok{background:var(--ok-l);border:1.5px solid var(--ok)}
+#side-steps{font-size:13px;line-height:2.1}
+#side-todos{list-style:none}
+@media(max-width:980px){.layout{flex-direction:column}#sidebar{width:100%;position:static;flex-direction:row;flex-wrap:wrap}.sidecard{flex:1;min-width:250px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hwrap">
+    <h1>🩺 AI 开箱教室</h1>
+    <p>医学研究生的第一堂 Agent 课 · 零编程 · 全程 1 小时从"听说过"到"用起来"</p>
+    <div class="pbarwrap"><div class="pbar" id="pbar"></div></div>
+    <div class="ptxt" id="ptxt">学习进度 0%</div>
+  </div>
+</header>
+
+<nav id="nav">
+  <button data-p="home" class="on">🏠 首页</button>
+  <button data-p="course">📚 课程</button>
+  <button data-p="setup">🛠 装机向导</button>
+  <button data-p="api">🔌 API 实操</button>
+  <button data-p="cost">💰 费用计算器</button>
+  <button data-p="scenes">🎬 场景弹药库</button>
+  <button data-p="help">🚑 急救站</button>
+</nav>
+
+<div class="layout">
+<aside id="sidebar">
+  <div class="sidecard" id="side-live" style="display:none">
+    <h3>🚀 开箱实况</h3>
+    <div class="sideaction sa-run" id="side-action">正在读取向导状态…</div>
+    <div id="side-steps"></div>
+  </div>
+  <div class="sidecard" id="side-ctx"></div>
+  <div class="sidecard" id="side-plan">
+    <h3>📋 我的进度与下一步</h3>
+    <div class="pbarwrap" style="background:#e2e8f0;height:10px"><div class="pbar" id="sidebar-prog" style="width:0"></div></div>
+    <div class="sideaction sa-ok" id="side-next"></div>
+    <ul id="side-todos"></ul>
+  </div>
+</aside>
+<main>
+
+<!-- ============ 首页 ============ -->
+<section class="page on" id="page-home">
+  <div class="card" id="why-agent">
+    <h2 class="pt">🎯 为什么你需要一个 AI Agent？（30 秒版）</h2>
+    <p class="lead"><b>Agent = 会自己干活的 AI 助理</b>。你说清楚"要什么"，它自己拆步骤、读文件、上网查资料、写代码、跑分析，最后把<b>成品</b>交到你手上——聊天机器人只会"说"，Agent 会"做"。</p>
+    <div class="grid g2">
+      <div class="box analogy"><b>📖 读文献</b>以前：精读一篇英文文献 2 小时。<br>现在：把 PDF 丢进文件夹，说"读完给我 5 点笔记 + 像审稿人一样挑方法学的刺"——3 分钟出结果，约 4 分钱，追问随便问。</div>
+      <div class="box analogy"><b>📊 做统计</b>以前：选 t 检验还是卡方要翻半天书，SPSS 还总报错。<br>现在：甩一个脱敏的 Excel，它自己写代码、选检验、说明理由、出三线表和箱线图。你一行代码都不用看。</div>
+      <div class="box analogy"><b>🧮 啃综述</b>以前：30 篇文献看到眼花，表格还是要自己搬。<br>现在：让它横向对比、自动生成对比表、指出研究空白——你只做判断和把关（文献必须核实！）。</div>
+      <div class="box analogy"><b>🏠 干杂活</b>组会 PPT 大纲、行程规划、报销单整理、给爸妈的体检报告划重点；玩 VOCALOID 的话——写词、逐字拆音、PV 分镜脚本它也接。凡是能说清楚的事，都能交给它。</div>
+    </div>
+    <div class="box okbox"><b>怎么开始拥有这一切？</b>双击压缩包里的「①先双击我-开箱向导.bat」装好引擎（全自动，约 5 分钟）→ 回这里上完 6 节课 → 去「场景弹药库」抄第一个作业。</div>
+  </div>
+  <div class="hero">
+    <h2>你好！环境装好了吗？</h2>
+    <p>如果你还没跑过压缩包根目录的「<b>①先双击我-开箱向导.bat</b>」——先去跑它：自动装好 Node.js、Claude Code、CC Switch 并引导你配置密钥，全程只需按回车和点“下一步”。跑完回来，这里教你把 AI 从“聊天玩具”变成“科研助理”。</p>
+  </div>
+  <div class="grid g3">
+    <div class="card"><h2 class="pt">1️⃣ 先上课</h2><p class="lead">6 节课讲透 Agent、API、Token 这些词，每课 5 分钟，结尾 2~3 道题检验。</p><button class="btn" data-go="course">进入课程 →</button></div>
+    <div class="card"><h2 class="pt">2️⃣ 再装机</h2><p class="lead">还没跑压缩包根目录的「①先双击我-开箱向导.bat」？先跑它——自动装好一切。装完对照这里的清单逐项打勾、搞懂每步在干什么。</p><button class="btn" data-go="setup">打开装机向导 →</button></div>
+    <div class="card"><h2 class="pt">3️⃣ 抄作业</h2><p class="lead">8 个实战场景：文献速读、综述、数据分析、润色、出题、PPT、生活、VOCALOID 创作。一键复制提示词。</p><button class="btn" data-go="scenes">去抄场景 →</button></div>
+    <div class="card"><h2 class="pt">🔌 会用 API</h2><p class="lead">三个工具（Claude Code / CC Switch / DSH）怎么吃上你的 Key：配置文件在哪、怎么验证、再亲手裸调一次 API 看懂计费。</p><button class="btn" data-go="api">API 实操教学 →</button></div>
+  </div>
+  <div class="card">
+    <h2 class="pt">🧭 我的学习进度</h2>
+    <div id="homeprogress"></div>
+  </div>
+  <div class="card">
+    <h2 class="pt">📌 三条使用纪律（先背下来）</h2>
+    <div class="box warnbox"><b>① 患者数据先脱敏</b>姓名、住院号、生日、具体日期……凡是能定位到人的信息，删掉或换成"患者A"再发给 AI。</div>
+    <div class="box warnbox"><b>② AI 给的文献必须核实</b>它可能会一本正经地编造不存在的论文。凡是 PMID、剂量、指南推荐，用前必查权威来源。</div>
+    <div class="box okbox"><b>③ 娱乐闲聊用免费 App</b>日常聊天用 DeepSeek 官方 App（免费）；API 是给 Agent 干活用的，别拿它烧钱唠嗑。</div>
+  </div>
+</section>
+
+<!-- ============ 开箱实况（向导联动） ============ -->
+<section class="page" id="page-wizard">
+  <div class="hero">
+    <h2>🚀 开箱实况</h2>
+    <p>向导正在这个黑色窗口里自动干活（窗口只是日志，你的所有指引都在这个页面）。若这里一直显示「等待向导启动」，说明向导没在跑：请去压缩包根目录双击「①先双击我-开箱向导.bat」。</p>
+  </div>
+  <div class="card">
+    <div class="pbarwrap" style="background:rgba(255,255,255,.35)"><div class="pbar" id="wizprog" style="background:var(--teal);width:0"></div></div>
+    <p class="lead" id="wizpct">⏳ 等待向导启动…</p>
+    <div id="wizdetail" class="box analogy" style="display:none"></div>
+    <div id="wizsteps"></div>
+    <div class="wlogbox" id="wizlog" style="display:none"></div>
+  </div>
+  <div class="card" id="wizkey" style="display:none">
+    <h2 class="pt">🔑 轮到你了：需要你的「密钥」——先别慌，3 分钟搞懂</h2>
+    <div class="box analogy"><b>密钥是什么？</b>一串 <code>sk-</code> 开头的密码，相当于你的 <b>AI 就诊卡</b>：AI 干活的每一分钱都从这张卡里按用量扣。前面装的一切是身体，它才是灵魂——没有它，AI 干不了活。</div>
+    <div class="step">
+      <h3>去哪里拿一张？（约 5 分钟，全程手机/电脑都行）</h3>
+      ① 点下面按钮打开 <b>DeepSeek 开放平台</b>，手机号注册<br>
+      ② 完成<b>实名认证</b>（官方要求，走个流程）<br>
+      ③ 充值 <b>20 元</b>（微信/支付宝，学生党够用一两个月）<br>
+      ④ 左侧菜单「API Keys」→ 创建 API Key → <b>立刻复制</b>（只显示一次！）<br><br>
+      <button class="btn blue" onclick="window.open('https://platform.deepseek.com')">打开 DeepSeek 开放平台 ↗</button>
+    </div>
+    <div class="box okbox"><b>拿到后怎么做？</b>回到那个<b>黑色向导窗口</b>，在闪烁光标处<b>点鼠标右键</b>即可粘贴（Windows 终端用右键粘贴），然后按回车。这一页会自动继续往下走，不用刷新。</div>
+    <div class="box warnbox"><b>暂时不想弄？</b>回黑色窗口直接按回车跳过。以后在教学程序的「装机向导 → 第 1 步」或 CC Switch 里随时能配。</div>
+  </div>
+  <div class="card" id="wizdone" style="display:none">
+    <h2 class="pt">🎉 开箱完成</h2>
+    <p class="lead" id="wizdonetext"></p>
+    <button class="btn" onclick="localStorage.setItem('wizardDoneSeen','1');clearInterval(wizTimer);sidePlan();go('home')">开始学习 →</button>
+    <button class="btn ghost" onclick="localStorage.setItem('wizardDoneSeen','1');clearInterval(wizTimer);sidePlan();go('help')">有项目没成功，去急救站</button>
+  </div>
+</section>
+
+<!-- ============ 课程 ============ -->
+<section class="page" id="page-course">
+  <h2 class="pt">📚 六节课，认识 AI 的全貌</h2>
+  <p class="lead">每节课 5 分钟。展开学习 → 做对全部选择题 → 课标变绿色"已完成"。你的进度自动保存在这台电脑上。</p>
+  <div id="lessons"></div>
+</section>
+
+<!-- ============ 装机向导 ============ -->
+<section class="page" id="page-setup">
+  <h2 class="pt">🛠 装机向导：逐项打勾，机器抽查</h2>
+  <p class="lead">💡 <b>捷径</b>：压缩包根目录的「①先双击我-开箱向导.bat」能自动完成本页第 1~3 步的大部分安装——先跑向导，再回来逐项打勾加深理解。关键步骤（密钥、CLAUDE.md 文件）由程序<b>自动抽查验收</b>，带「✔机器已验证」的就是查过作业的。全部打勾 = 你的 AI 助理正式上岗。卡住了去「急救站」。</p>
+  <div id="setupsteps"></div>
+</section>
+
+<!-- ============ API 实操教学 ============ -->
+<section class="page" id="page-api">
+  <h2 class="pt">🔌 API 实操：让三个工具吃上你的 Key</h2>
+  <p class="lead">这一页是"动手版"API 课（概念在第 2 课学过了）。你的三个 Agent 工具——<b>Claude Code、CC Switch、DSH</b>——用的都是<b>同一把 DeepSeek API Key、同一个账户余额</b>，只是"插座形状"不同。</p>
+
+  <div class="card">
+    <h2 class="pt">🗺 先看全景：一把钥匙开三把锁</h2>
+    <div class="box analogy"><b>📌 格局图</b>
+    DeepSeek 开放平台（你的账户和余额）<br>
+    &nbsp;&nbsp;└─ 🔑 API Key（sk- 开头，唯一"电源"）<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ 🤖 <b>Claude Code</b>：读 <code>C:\Users\你\.claude\settings.json</code>（装机向导已自动写好）<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ 🔀 <b>CC Switch</b>：图形化"换发动机"面板，改的其实是同一个 settings.json<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ 🧩 <b>DSH</b>：在自己的 Settings → Models 里单独填一次 Key</div>
+    <p class="lead">下面逐个讲。已经跑过「①开箱向导」的同学，前两个工具其实已经配好了——这一页教你<b>看懂它写了什么、坏了怎么修、想改怎么改</b>。</p>
+  </div>
+
+  <div class="card">
+    <h2 class="pt">🤖 Claude Code：配置文件在哪、写了什么</h2>
+    <p class="lead">Claude Code 每次启动都会读这个文件：<code>C:\Users\你的用户名\.claude\settings.json</code>。装机向导第 4 步写入的内容长这样（对照看懂每一行）：</p>
+    <pre>{
+  "env": {
+    "ANTHROPIC_BASE_URL":     "https://api.deepseek.com/anthropic",
+    "ANTHROPIC_AUTH_TOKEN":   "sk-这里是你自己的Key",
+    "ANTHROPIC_MODEL":        "deepseek-flash[1m]",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-flash[1m]",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL":   "deepseek-flash[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL":  "deepseek-flash"
+  }
+}</pre>
+    <div class="grid g2">
+      <div class="box analogy"><b>逐行翻译</b>
+      <code>BASE_URL</code>：告诉它"别去官方 api.anthropic.com（要登录/美元），去 DeepSeek 的兼容接口"<br>
+      <code>AUTH_TOKEN</code>：你的钥匙 sk-xxx<br>
+      <code>MODEL</code> 三兄弟：把界面里的"Sonnet/Opus/Haiku"档位全部映射到 <code>deepseek-flash</code>（[1m] = 100万 token 长上下文版）</div>
+      <div class="box warnbox"><b>⚠ 常见坑</b>
+      ① 地址还指向 <code>api.anthropic.com</code> = 一开会就"要求登录"的根源；<br>
+      ② 改完文件要<b>重开 Claude Code</b> 才生效；<br>
+      ③ JSON 里多/少一个逗号会整个失效——改崩了就重跑装机向导第 4 步一键重写</div>
+    </div>
+    <div class="step"><h3>✅ 手动配置三步（或验证向导写的对不对）</h3>
+      ① 按 <code>Win + R</code> 输入 <code>%USERPROFILE%\.claude</code> 回车，记事本打开 <code>settings.json</code>；<br>
+      ② 对照上面的模板核对/粘贴（Key 换成你自己的）；<br>
+      ③ 保存后开一个新的命令行窗口，输入 <code>claude</code> 回车 → 发一句"你好"。有回复 = 通电成功。</div>
+    <div class="box okbox"><b>日常两个好习惯</b>对话里输 <code>/model</code> 随时看当前用的是哪个模型；输 <code>/cost</code> 看本次会话花了多少钱。人设文件 CLAUDE.md 的教学在「装机向导」第 4 步。</div>
+  </div>
+
+  <div class="card">
+    <h2 class="pt">🔀 CC Switch：给 Claude Code 换发动机的图形面板</h2>
+    <p class="lead">CC Switch 是个图形小工具，作用一句话：<b>帮你改写上面那个 settings.json</b>——和手动改是同一件事的"可视化版"。适合以后你想同时保留多个供应商（比如官方渠道 + DeepSeek）一键切换的场景。</p>
+    <div class="step"><h3>✅ 添加 DeepSeek 供应商（四步）</h3>
+      ① 打开 CC Switch，进供应商管理 → 添加；<br>
+      ② 名称随便填（如 <code>DeepSeek</code>）；<br>
+      ③ 接口地址填 <code>https://api.deepseek.com/anthropic</code>，Key 粘贴你的 <code>sk-</code>，默认模型填 <code>deepseek-flash[1m]</code>；<br>
+      ④ 保存并"切换/应用"到该供应商 → 打开 Claude Code 发"你好"验证。</div>
+    <div class="box warnbox"><b>⚠ 切换的副作用</b>切换 = 整个 settings.json 被换写成那个供应商的配置。切去别家玩完，<b>记得切回 DeepSeek</b>，不然下次打开 Claude Code 会用错渠道（报"要求登录"九成是这个原因——去急救站对号入座）。</div>
+  </div>
+
+  <div class="card">
+    <h2 class="pt">🧩 DSH：在自己的设置里填同一把 Key</h2>
+    <p class="lead">DSH（DeepSeek Harness）是 DeepSeek 官方开源的 Agent 运行环境，口号"万物皆插件"。它<b>不读</b> Claude Code 的配置文件，要在自己的设置里单独填一次——但用的是<b>同一把 Key、扣同一个余额</b>。</p>
+    <div class="step"><h3>✅ 配置两步 + 验证</h3>
+      ① 打开 DSH → <code>Settings → Models</code> → 找到 DeepSeek → 粘贴你的 <code>sk-</code> Key → 保存；<br>
+      ② 随便发一句"你好"，有回复即成功。不出结果时依次查：Key 是否保存、余额是否充足、网络是否正常（急救站有条目）。</div>
+    <div class="box analogy"><b>🔌 插件玩法（它存在的意义）</b>基础会话之外，DSH 靠插件长本事：文献插件、表格插件……在它的插件市场里按需安装，Agent 能力就扩展一块。新手阶段先跑通"你好"，插件以后慢慢玩。</div>
+  </div>
+
+  <div class="card">
+    <h2 class="pt">🧪 选修：亲手"裸调"一次 API（10 分钟看懂计费）</h2>
+    <p class="lead">不经过任何 Agent 工具，直接跟 DeepSeek 服务器说一次话——做过一遍，"API、token、按量计费"就再也不抽象了。把 <code>sk-xxx</code> 换成你的 Key，存成 <code>test.ps1</code> 右键"使用 PowerShell 运行"，或在 PowerShell 里整段粘贴：</p>
+    <pre># PowerShell 版（Windows 自带，零安装）
+$key = "sk-换成你的Key"
+$r = Invoke-RestMethod -Uri "https://api.deepseek.com/chat/completions" `
+  -Method Post -ContentType "application/json" `
+  -Headers @{ Authorization = "Bearer $key" } `
+  -Body (@{
+      model    = "deepseek-flash"
+      messages = @(@{ role = "user"; content = "用一句话介绍你自己" })
+      max_tokens = 50
+    } | ConvertTo-Json -Depth 5)
+"回复：" + $r.choices[0].message.content
+"用量：" + ($r.usage | ConvertTo-Json -Compress)   # 看看花了几个 token</pre>
+    <div class="grid g2">
+      <div class="box analogy"><b>读懂返回</b><code>choices</code> 是回复内容；<code>usage</code> 里的 prompt_tokens（你的问题）/ completion_tokens（它的回答）就是计费依据——输入约 ¥1/百万、输出约 ¥4/百万，一次对话不到一分钱。和「费用计算器」页正好对上。</div>
+      <div class="box dangerbox"><b>🚫 报错三件客</b>
+      <code>401</code>：Key 错了/被删了 → 平台重新复制；<br>
+      <code>402</code>：余额不足 → 充值；<br>
+      <code>429</code>：发太快被限速 → 等一分钟。详细的去「急救站」。</div>
+    </div>
+    <p class="lead">会写代码的同学也可以用 Python：<code>pip install openai</code> 后把 <code>base_url</code> 指向 <code>https://api.deepseek.com</code>、<code>api_key</code> 填你的 Key、模型名 <code>deepseek-flash</code>，其余和 OpenAI 官方库写法完全一样（DeepSeek 做了兼容）。</p>
+  </div>
+
+  <div class="card">
+    <h2 class="pt">🧾 一页速查（截图保存）</h2>
+    <table>
+      <tr><th>工具</th><th>Key 填在哪</th><th>接口地址</th><th>验证方法</th></tr>
+      <tr><td>🤖 Claude Code</td><td><code>%USERPROFILE%\.claude\settings.json</code>（或跑装机向导）</td><td><code>https://api.deepseek.com/anthropic</code></td><td rowspan="3" style="vertical-align:middle">发一句"你好"，有回复 = 通电</td></tr>
+      <tr><td>🔀 CC Switch</td><td>供应商管理 → 添加 DeepSeek</td><td><code>https://api.deepseek.com/anthropic</code></td></tr>
+      <tr><td>🧩 DSH</td><td>Settings → Models → DeepSeek</td><td>软件内置，无需手填</td></tr>
+      <tr><td>🧪 裸调 API</td><td>请求头 Authorization: Bearer sk-xxx</td><td><code>https://api.deepseek.com/chat/completions</code></td><td>看返回的 choices 和 usage</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============ 费用计算器 ============ -->
+<section class="page" id="page-cost">
+  <h2 class="pt">💰 费用计算器：我这样用，一个月多少钱？</h2>
+  <p class="lead">拖动滑块，按你的真实使用习惯估算。价格采用 DeepSeek 官方 2026-10 定价，估算仅供参考。</p>
+  <div class="card">
+    <div class="costrow"><span>📖 每天速读文献</span><input type="range" id="cpapers" min="0" max="20" value="2"><span class="val" id="vpapers">2 篇/天</span></div>
+    <div class="costrow"><span>🤖 每天中型任务（分析/写作）</span><input type="range" id="ctasks" min="0" max="10" value="1"><span class="val" id="vtasks">1 个/天</span></div>
+    <div class="costrow"><span>🌙 每月整晚大活（综述/赶论文）</span><input type="range" id="cbig" min="0" max="8" value="1"><span class="val" id="vbig">1 次/月</span></div>
+    <div class="costrow"><span>🧠 模型档位</span>
+      <select id="cmodel"><option value="flash">deepseek-flash · 快又便宜（推荐日常）</option><option value="pro">deepseek-v4-pro · 深度思考（贵约4.5倍）</option></select>
+      <span>⏰ 时段</span>
+      <select id="ctier"><option value="off">空闲半价档（晚6点后/周末，默认）</option><option value="on">工作日白天高峰档</option></select>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bignum" id="cresult">--</div>
+    <p class="lead" id="cdetail"></p>
+    <div id="ccmp"></div>
+  </div>
+  <div class="card">
+    <h2 class="pt">🔎 实时查余额（选填）</h2>
+    <p class="lead">填入 API Key，由你的浏览器直连 DeepSeek 官方接口查剩余额度。密钥只在本页内存中使用、不保存。</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <input id="balkey" type="password" placeholder="sk- 开头的密钥" style="flex:1;min-width:220px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:Consolas,monospace">
+      <button class="btn" id="balbtn">查询</button>
+    </div>
+    <div id="balout" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
+    <h2 class="pt">📋 官方价格速查（每 100 万 token）</h2>
+    <table>
+      <tr><th>模型 / 时段</th><th>输入·未命中</th><th>输入·缓存命中</th><th>输出</th></tr>
+      <tr><td>flash · 空闲档</td><td>1 元</td><td>0.02 元</td><td>4 元</td></tr>
+      <tr><td>flash · 高峰档</td><td>2 元</td><td>0.04 元</td><td>8 元</td></tr>
+      <tr><td>v4-pro · 空闲档</td><td>4.5 元</td><td>0.15 元</td><td>13.5 元</td></tr>
+      <tr><td>v4-pro · 高峰档</td><td>9 元</td><td>0.30 元</td><td>27 元</td></tr>
+    </table>
+    <p class="lead">高峰 = 工作日 9–12 点、14–18 点；<b>晚上、凌晨、午休、周末、法定节假日全部半价</b>。一页A4约1000 token——所以"输入100万token"≈一整本书，日常任务离这个量级很远。</p>
+  </div>
+</section>
+
+<!-- ============ 场景 ============ -->
+<section class="page" id="page-scenes">
+  <h2 class="pt">🎬 场景弹药库：复制 → 粘贴 → 收货</h2>
+  <p class="lead">「用哪个软件」：涉及你电脑里的文件（PDF/Excel/PPT）用 <b>Claude Code</b>；纯文字加工两者皆可；带 ★ 的是新手第一枪，建议从它开始。</p>
+  <div class="grid g2" id="scenewrap"></div>
+</section>
+
+<!-- ============ 急救站 ============ -->
+<section class="page" id="page-help">
+  <h2 class="pt">🚑 急救站：90% 的问题在这里自救</h2>
+  <p class="lead">点开对应的症状查看处置方法。</p>
+  <div id="helpwrap"></div>
+</section>
+
+</main>
+</div>
+
+<footer>
+  AI 开箱教室 · v1.0 · 价格与软件信息核实于 2026 年 10 月，以官网为准（DeepSeek: platform.deepseek.com）<br>
+  本程序离线可用、无需安装；学习进度只保存在你自己的浏览器里，不上传任何数据。<br>
+  送给每一位想用 AI 把自己从重复劳动里捞出来的医学生 🩺
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 数据 ================= */
+const LESSONS=[
+{id:"l1",em:"🤖",title:"第 1 课 · 聊天机器人 vs Agent：差在哪",sub:"5 分钟 · 理解“许愿式功能”的来源",
+ blocks:[
+  {p:"你大概用过网页版 DeepSeek 或 ChatGPT：你问一句，它答一句。<b>这叫“聊天”，不是“Agent”</b>。它看不到你的电脑，不能帮你整理文件，答完就散，什么也没留下。"},
+  {p:"<b>Agent（智能体）</b>完全不同：你说“把我文件夹里这 3 篇 PDF 读完，做个对比表格”，它会<b>自己拆步骤</b>——打开文件 → 逐篇阅读 → 提取数据 → 生成表格 → 存到你电脑上。中间不需要你动手。"},
+  {box:"analogy",t:"🏥 医学类比",p:"网页聊天 = <b>电话咨询</b>：问一句答一句，挂了电话啥也没留下。<br>Agent = <b>配了个随叫随到的科研助理</b>：你说目标，它自己跑腿、翻资料、写文档、交成品。"},
+  {p:"Agent 的公式：<b>Agent = 大模型 + 自主拆解任务 + 调用工具 + 循环执行直到交付</b>。你装的两个软件——Claude Code 和 DSH——就是两种不同的“Agent 工作台”（就像不同品牌的手术台，都能做手术，手感不同）。"},
+  {p:"现场证据：装好 Claude Code 后，对它说“看看这个文件夹里有什么，挑出所有 PDF 给我列个清单”。你会看到它<b>真的去打开你的文件夹干活</b>——这就是 Agent。"}],
+ quiz:[
+  {q:"网页聊天和 Agent 最本质的区别是？",o:["Agent 回答更长的答案","Agent 能自主拆解任务、调用工具、交付成品","Agent 需要付费，聊天免费"],a:1,exp:"付费与否不是区别（两者都有免费/付费形态）。本质区别是 Agent 能“自己干活”而不只是“说话”。"},
+  {q:"下面哪件事<b>只有</b> Agent（而非网页聊天）做得到？",o:["帮我翻译一段英文摘要","读取我电脑里的 Excel，做完统计并存一张图到桌面","帮我把这段话改得通顺些"],a:1,exp:"前两者是纯文字加工，聊天也能做；“碰你电脑里的文件并产出文件”是 Agent 的独门绝活。"}]},
+{id:"l2",em:"🔑",title:"第 2 课 · API 与 API Key：你的“AI 就诊卡”",sub:"5 分钟 · 搞懂钱从哪扣",
+ blocks:[
+  {p:"网页版 AI 是“免费大厅”，人多、功能受限。软件里的 Agent 要走<b>专属通道</b>——这个通道叫 <b>API</b>，你的身份凭证叫 <b>API Key</b>（一串 <code>sk-</code> 开头的密码）。"},
+  {box:"analogy",t:"🏥 医学类比",p:"API = 医院的<b>挂号窗口</b>（程序找它“挂号”调用大模型）<br>API Key = 你的<b>就诊卡</b>（凭它扣费，卡里没钱就停）"},
+  {p:"办卡流程（装机向导第 1 步会带你做）：到 <b>DeepSeek 开放平台</b> 注册 → 实名认证 → 充 20 块钱 → 生成一把 Key。之后 Claude Code 和 DSH 都填这同一把 Key。"},
+  {box:"danger",t:"⛔ 三条保命规则",p:"① Key <b>绝不外传</b>——发给别人等于把钱包给他；② 不要截图发群、不要发给别人“帮忙看看”；③ 万一泄露，立刻回平台把那把 Key 删除重建。"}],
+ quiz:[
+  {q:"API Key 最像什么？",o:["一张门禁卡，进门后随便用","一张预存了钱的就诊卡：凭它扣你的余额，不能外借","一张会员卡，享受折扣"],a:1,exp:"Key 绑定你的账户余额，谁拿到 Key 谁就能花你的钱——按 token 计量，精确到分。"},
+  {q:"同事说“把 Key 发我，我帮你测测”，你应该：",o:["发给他，都是熟人","发个打码的","拒绝：Key 等于钱包钥匙，谁都不能给"],a:2,exp:"正确做法永远是拒绝。真要帮忙，让他注册自己的号（注册免费，充 10 块就能玩很久）。"}]},
+{id:"l3",em:"🪙",title:"第 3 课 · Token 与费用：为什么用不了几个钱",sub:"6 分钟 · 花钱心不慌",
+ blocks:[
+  {p:"AI 按 <b>token</b> 计费。token 是最小计量单位：约等于<b>半个到一个汉字</b>，或四分之一个英文单词。输入（你发给它的）和输出（它写的）分别计价，输出更贵。"},
+  {p:"体感换算：一页 A4（800 字）≈ 1000 token；一篇英文 PDF ≈ 1~2 万 token；一本 30 万字的书 ≈ 50 万 token。而官方计价单位是“每 100 万 token”——日常任务离这个量级很远。"},
+  {box:"okbox",t:"✅ 实测参考（空闲档 flash）",p:"问一个问题：不到 1 分钱<br>速读一篇文献：约 4 分钱<br>对比 3 篇文献出综述骨架：约 1 毛<br>让 Agent 分析 Excel 出图出表：2~3 毛<br>整晚读 20 篇文献写综述：约 2 块钱"},
+  {p:"两个省钱机关：① <b>峰谷定价</b>——工作日白天全价，<b>晚上、周末、节假日一律半价</b>（夜猫子科研党天然省钱）；② <b>缓存命中</b>——同一篇文献连续追问，重复内容按 0.02 元/百万 的“缓存价”计费，几乎白送。"},
+  {box:"analogy",t:"🏥 医学类比",p:"峰谷定价 = <b>专家门诊分时段</b>；缓存命中 = <b>复诊免收问诊费</b>（病历已建过档）。"},
+  {p:"预付费制：先充值，用多少扣多少，<b>余额用完自动停服</b>——不存在盗刷欠费。想监控开支，平台“用量”页能看到每一分钱花在哪。"}],
+ quiz:[
+  {q:"一页 A4 纸（约 800 字）大约是多少 token？",o:["约 100","约 1000","约 10 万"],a:1,exp:"1 汉字 ≈ 1~2 token，800 字约 1000 token。记住这个量级，你就能随时心算费用。"},
+  {q:"什么时候享受半价？",o:["每天 0 点到 6 点","晚上、周末和法定节假日","充值满 100 元后"],a:1,exp:"高峰只有工作日 9–12 点、14–18 点，其余全部半价。学生晚上干活，自动省钱。"},
+  {q:"对同一篇文献连续追问第 3 个问题，为什么特别便宜？",o:["系统给老用户打折","重复内容命中缓存，按极低价计费","问题越短越便宜"],a:1,exp:"上下文缓存让“问诊费”只收一次。所以顺着一个文件深挖，比东一枪西一枪省钱得多。"}]},
+{id:"l4",em:"🧠",title:"第 4 课 · 上下文窗口与 CLAUDE.md：它的记忆",sub:"5 分钟 · 知道它为什么会“忘”",
+ blocks:[
+  {p:"<b>上下文窗口</b> = 模型一次能“记在脑子里”的最大文字量（新模型可达 100 万 token，约一整本书）。对话超出容量，最早的内容会被“挤出脑外”——它不是坏了，是正常现象。"},
+  {box:"analogy",t:"🏥 医学类比",p:"就像实习生的<b>工作记忆</b>：一次门诊能记住的病人信息有限，超了就得“叫下一个”。<br>对策：开新对话，或让它“把结论先写进笔记/文件”再继续。"},
+  {p:"<b>CLAUDE.md</b>：一个放在你工作文件夹里的小文件，写着你给 AI 的“长期规矩”（我是谁、说话风格、红线要求）。Claude Code 每次启动都会自动读它——相当于给助理做<b>岗前培训</b>，规矩说一遍，终身生效。"},
+  {box:"warnbox",t:"📦 顺带科普：“.md”是什么文件？",p:".md（Markdown）= <b>带格式的记事本</b>，用 # * - 等符号表示标题、加粗、列表，电脑上用记事本就能打开编辑。你不需要学会写它——装机向导第 4 步教你“复制 → 记事本 → 另存为”一键生成 CLAUDE.md。"}],
+ quiz:[
+  {q:"对话太长，AI 把开头的要求忘了，正确的处理是：",o:["骂它一顿重问一遍","开个新对话，或先让它把要点写进文件再继续","一直重复原话直到它记住"],a:1,exp:"“挤出脑外”是机制不是故障。落盘到文件 = 把工作记忆转成长期笔记，最稳。"},
+  {q:"CLAUDE.md 的作用是：",o:["Claude 的收费账单","长期生效的“岗前培训”：每次启动自动读取你的规矩","存密码的保险箱"],a:1,exp:"把你重复交代的偏好写进去一次，以后每个对话都自动带着，不用再说。"}]},
+{id:"l5",em:"✍️",title:"第 5 课 · 提示词：会说话 = 会用 AI",sub:"6 分钟 · 一学就会的万能模板",
+ blocks:[
+  {p:"提示词（Prompt）= 你对 AI 说的那段话。质量决定产出质量。多数人用不好 AI，不是因为 AI 笨，是因为<b>指令写得像“我不舒服”而不是“转移性右下腹痛 6 小时，伴发热”</b>。"},
+  {box:"okbox",t:"🧩 万能模板（背下来）",p:"<b>【角色】+【目标】+【材料在哪】+【输出成什么样】+【约束/禁忌】</b><br><br>例：“你是医学统计顾问（角色）。分析我文件夹里的 data.csv（材料），为组间比较选择合适的检验方法并说明理由（目标），结果整理成论文三线表并存到本文件夹（输出格式）。我零编程基础，代码你全部自己写自己跑（约束）。”"},
+  {p:"三个立刻见效的小技巧：① <b>给身份</b>（“你是期刊审稿人”比“帮我看看”强十倍）；② <b>给样例</b>（贴一段你喜欢的文风让它模仿）；③ <b>给禁区</b>（“不确定就说不确定，禁止编造文献”）。"},
+  {p:"进阶心法：把 Agent 当<b>能干的实习生</b>——第一次合作先小任务试手，满意再放大奖励复杂任务；它做得不好就退回去让它改，<b>反馈越具体，修改越准</b>。"}],
+ quiz:[
+  {q:"哪条指令更可能得到好结果？",o:["帮我把这篇文章弄好一点","你是SCI审稿人，请指出这段摘要的逻辑漏洞和冗余表达，逐条给出修改建议","翻译一下"],a:1,exp:"角色清晰 + 任务具体 + 输出形式明确。AI 不是读心术大师，你得把“主诉”写清楚。"},
+  {q:"万能模板的五要素是：",o:["礼貌+感谢+夸奖+催促+表情","角色+目标+材料+输出格式+约束","问题+答案+解释+举例+总结"],a:1,exp:"五要素齐了，AI 想跑偏都难。场景弹药库的 7 条提示词全是按这个模板写的。"}]},
+{id:"l6",em:"⚠️",title:"第 6 课 · 风险课：幻觉与患者隐私（最重要的一课）",sub:"6 分钟 · 医学生的红线",
+ blocks:[
+  {p:"<b>幻觉（Hallucination）</b>：模型会一本正经地<b>编造</b>不存在的东西——假的参考文献、假的 PMID、似是而非的剂量、“记得”根本不存在的指南推荐。它不是故意骗你，它的工作原理是“接话接得最顺”，而不是“查资料查得最准”。"},
+  {box:"analogy",t:"🏥 医学类比",p:"实习生不好意思说“不知道”，硬编了一个看似合理的答案。<br>对策不是开除他，而是<b>建制度</b>：重要结论一律溯源核实。"},
+  {box:"danger",t:"⛔ 医学场景高危清单（用前必核）",p:"① 参考文献真实性 → PubMed 查 PMID/DOI<br>② 药物剂量与配伍 → 说明书 / 权威药典<br>③ 指南推荐与年份 → 查指南原文<br>④ 统计方法选择 → 让它说理由，自己过一遍<br>⑤ 任何要写进论文/病历的数字"},
+  {p:"预防技巧写进提示词：“基于我提供的文献回答，不要凭记忆”、“不确定就明说不确定”、“引用文献请给出 PMID”。<b>RAG（检索增强生成）</b>也是为此：让它先开卷查资料再回答，可信度大幅上升。"},
+  {box:"danger",t:"🔴 患者隐私红线（每次上传前过一遍）",p:"姓名→“患者A” · 住院号/门诊号→删除 · 出生日期→删除或只留年龄 · 具体日期→模糊为“术后第3天” · 医院名/科室→删除<br><b>原始病历照片、基因数据、影像原图：永不直传。</b>涉及可识别信息的研究数据，先过伦理审批要求的流程。"},
+  {p:"最后记住定位：AI 是<b>助理，不是决策者</b>。临床判断的责任，永远在人。"}],
+ quiz:[
+  {q:"AI 给你列了 5 条参考文献，PMID 都写得很完整。你应该：",o:["PMID 都编得出来肯定是真的，直接用","先去 PubMed 逐条核实，真实的才用","用一半留一半"],a:1,exp:"编造 PMID 是 AI 幻觉的经典操作——格式完美、查无此文。核实是唯一安全网。"},
+  {q:"上传实验数据前，患者住院号应该：",o:["保留，方便 AI 对不上号时回查","删除或替换为“患者A”等代号","打个码再传"],a:1,exp:"上传即离开你的电脑。凡能定位到个人的字段，删或替换。这条没有例外。"},
+  {q:"AI 对某药物剂量说得斩钉截铁，你应该：",o:["AI 那么自信，信它","查说明书/权威来源核实后再用","让 AI 再确认一遍"],a:1,exp:"AI 的自信和正确没有关系（这是语言模型的特性）。剂量错误在医学里是人命关天的事，唯一可信的是权威来源。"}]}
+];
+
+const SETUP=[
+  {id:"s1",em:"💳",title:"第 1 步 · 办一张“AI 就诊卡”（DeepSeek API）",items:[
+ {id:"s1a",t:"打开 <code>platform.deepseek.com</code>，用手机号注册并完成<b>实名认证</b>"},
+ {id:"s1b",t:"充值 <b>20 元</b>（个人中心 → 充值。按量预付费，余额用完自动停，不会多扣）"},
+ {id:"s1c",t:"在「API Keys」页创建一把 Key，<b>立即复制保存到手机备忘录</b>（只显示一次！丢了就再建一把）"},
+ {id:"s1d",t:"找到「用量」页看一眼——以后你的每一分钱花在哪，都在这里查"}],
+ note:"顺带区分：日常闲聊用官方 <b>App / chat.deepseek.com（免费）</b>；只有 Agent 干活才走 API 花钱。",extra:"apikey"},
+{id:"s2",em:"🖥",title:"第 2 步 · Claude Code + CC Switch（国内标准路径）",
+ pre:{t:"📖 先花 1 分钟搞懂：为什么国内用 Claude Code 必须走 CC Switch？",
+  b:"① <b>出厂设定走不通</b>：Claude Code 默认要登录 Anthropic 账号 + 官方 API 付费——国内既付不了款，也有政策风险，直接打开永远卡在登录页；<br>② <b>连官网都进不去</b>：claude.ai 对国内网络直接返回「region unavailable」（我们实测过）——所以第①项用离线安装包装本体，不走官网；<br>③ <b>装上也不能直连</b>：必须「换发动机」——把它的请求指向 <b>DeepSeek 的 Anthropic 兼容端点</b>（<code>https://api.deepseek.com/anthropic</code>）+ 你的 sk- 密钥，壳还是 Claude Code，脑子换成 DeepSeek；<br>④ <b>手动换发动机是灾难</b>：配置藏在 <code>~/.claude/settings.json</code> 和环境变量里——背路径、懂 JSON、错一个字符全盘罢工；<br>⑤ <b>所以 CC Switch 是国内玩家的事实标准</b>：开源图形化配置管家，内置 DeepSeek 预设，点几下就把正确配置写进 Claude Code，以后想换 GLM 也一键切换。<b>本向导只教这一条路</b>，其他野路子见急救站。"},
+ items:[
+ {id:"s2a",t:"安装 <b>Claude Code 本体</b>（离线包已备好）：打开「安装包」文件夹 → ① 双击 <code>node-v22.23.3-x64.msi</code>（地基，一路下一步）→ ② 双击 <code>安装ClaudeCode-一键联网安装.bat</code>（国内镜像，1~3 分钟）。<b>装出来是黑色终端窗口——正常！以后就是打字对话，不写代码</b>"},
+ {id:"s2b",t:"安装 <b>CC Switch</b>：「安装包」里的 <code>CC-Switch-v4.0.4-Windows.msi</code>（官方 Release，已做 sha256 校验），双击一路下一步。装完桌面/开始菜单会有它的图标"},
+ {id:"s2c",t:"<b>重点：CC Switch 添加 DeepSeek（手把手）</b>：<br>① 打开 CC Switch，认准主界面右上角的 <b>「＋/ 添加供应商」</b>按钮<br>② 名称随意填（如 DeepSeek）；预设列表选 <b>DeepSeek</b>（没有预设就选 API 类型 <b>Anthropic</b>）<br>③ Base URL 应自动填为 <code>https://api.deepseek.com/anthropic</code> <button class='btn ghost cpy' data-copy='https://api.deepseek.com/anthropic'>复制</button>（没自动填就粘贴）<br>④ API Key：粘贴你的 sk- 密钥<br>⑤ 点 <b>保存</b>，再点该供应商的 <b>「启用 / 切换」</b>，让它变成当前生效<br>⑥ 版本不同按钮位置略有差异——认准「添加供应商」四个字就行"},
+ {id:"s2d",t:"验收：打开/重启 Claude Code（终端输入 <code>claude</code> 回车），发送“你好，请用一句话介绍你自己”——收到中文回复 = 换发动机成功 🎉"},
+ {id:"s2e",t:"双击配套文件的「<b>AI装机体检助手</b>」复查——它会真读你的 settings.json，确认地址已指向 DeepSeek、密钥格式正确，全绿 ✔ 才算毕业"}],
+ note:"📌 <b>三个补充说明</b>：① CC Switch 切换供应商时会<b>整体重写</b> settings.json（自定义字段可能被清——体检助手每次写入前自动备份，正好兜住这个已知 bug）；② CC Switch 的本地路由模式下，模型名<b>别手动加 [1m] 后缀</b>，预设已配好；③ 开箱向导第 4 步和 CC Switch 写的是<b>同一个配置文件</b>，谁后执行谁生效，不冲突——推荐以后统一用 CC Switch 管理。"},
+{id:"s3",em:"🧩",title:"第 3 步 · 装 DSH 桌面版（DeepSeek 亲儿子，玩插件）",items:[
+ {id:"s3a",t:"下载安装（三选一）：① GitHub 搜 <code>rye567/dsh-desktop</code> 的 Releases 页下载 Windows 安装包（启动即用，自动装好一切）；② 微软商店搜「DSH Desktop (Community)」；③ DeepSeek 官网公告的官方桌面预览版（需实名+账户余额）"},
+ {id:"s3b",t:"首次启动后进入 <b>Settings → Models</b>，在 DeepSeek 卡片里粘贴你的 API Key 并保存"},
+ {id:"s3c",t:"验收：随便发一个任务，比如“帮我把这段话改成一封正式邮件：【随便贴一段】”"}],
+ note:"DSH（DeepSeek Harness）是 DeepSeek 官方开源的 Agent 运行环境，口号“万物皆插件”——以后可以慢慢装文献、表格类插件扩展能力。两个软件共用同一把 Key、同一个余额。"},
+{id:"s4",em:"📋",title:"第 4 步 · 部署“AI 人设”：CLAUDE.md",items:[
+ {id:"s4a",t:"看懂要做的事：在<strong>你的工作文件夹</strong>（比如 D:\\科研\\ 放文献的地方）里放一个名为 <code>CLAUDE.md</code> 的文本文件，Claude Code 每次启动自动读它"},
+ {id:"s4b",t:"动手：打开<b>记事本</b> → 复制下方人设模板粘贴进去"},
+ {id:"s4c",t:"另存为：文件名输 <code>CLAUDE.md</code>，保存类型选<b>「所有文件」</b>，编码选 <b>UTF-8</b>，保存到你的工作文件夹（别存成 CLAUDE.md.txt！）"},
+ {id:"s4d",t:"验收：Claude Code 里问“你知道我是什么背景吗？有什么规矩？”——它应该能说出“医学研究生、零编程、要核实文献”"}],
+ note:"科普：.md 不是什么神秘格式，就是“带格式的记事本”，记事本能开能改。人设模板在下方，点复制 ↓",
+ extra:"claude"},
+{id:"s5",em:"🎓",title:"第 5 步 · 毕业测试（真刀真枪）",items:[
+ {id:"s5a",t:"把一篇 PDF 文献放进工作文件夹，对 Claude Code 说：“读一下这个文件夹里的 PDF，给我 5 点结构化笔记”（场景弹药库 ★ 题）"},
+ {id:"s5b",t:"观察它干活的样子：它会列出计划 → 请求读文件 → 自己读完 → 交笔记。<b>这就是 Agent。</b>看不懂的操作可以拒绝并问它想干嘛"},
+ {id:"s5c",t:"回到 DeepSeek 平台「用量」页刷新：看看刚才这一单花了几分钱"}],
+ note:"三关全过，你的 AI 助理正式上岗。接下来去「场景弹药库」把 7 个场景挨个玩一遍。"}
+];
+
+const CLAUDE_MD=`# 我的AI工作约定（CLAUDE.md）## 我是谁
+- 医学研究生，研究方向：（在这里填写）
+- 零编程基础：解释请用大白话，出现术语要顺带一句话解释
+- 除非我明确要求，不要让我写或改代码——技术步骤你自己全部完成
+
+## 工作规矩
+- 动手做之前，先用一两句话复述你理解的我的目标，我确认后再开始
+- 大任务先给计划，分步执行，每步简短汇报进展
+- 给我任何结论时，注明“这是AI生成，重要内容请自行核实”
+
+## 红线（违反=严重事故）
+- 引用的文献必须真实存在，给出可查证的作者/期刊/年份/PMID；不确定就明说“我不确定”，禁止编造
+- 涉及药物剂量、诊疗方案、指南推荐时，必须提醒我核对权威来源
+- 我的数据可能涉及研究参与者：凡是能定位到个人的信息，提醒我先脱敏再上传
+- 统计结论只做分析参考，不构成临床建议；临床决策永远由人负责
+
+## 说话风格
+- 中文交流，重点加粗，多用表格和清单
+- 别长篇大论，先给结论再给细节`;
+
+const SCENES=[
+{em:"📄",star:true,tag:"Claude Code",title:"★ 场景 1 · 文献速读三分钟",
+ desc:"把 PDF 丢进工作文件夹，3 分钟拿到比你自己摘要更狠的笔记。",
+ prompt:"请阅读本文件夹里的《文件名.pdf》，用中文输出结构化笔记：\n① 研究问题与假设\n② 研究设计与对象（样本量、分组、随访）\n③ 主要结果（保留关键数字、效应量和 P 值）\n④ 结论与局限（像审稿人一样犀利）\n⑤ 对我的启发（我的研究方向：______）\n\n读完先复述你理解的文章主线，再输出笔记。",
+ note:"追问示例：“方法学上有哪些坑？”“如果让我复现这个研究，样本量要怎么算？”——同一篇文献连续追问最省钱（缓存计费）。"},
+{em:"🧮",tag:"Claude Code",title:"场景 2 · 多文献对比 + 综述骨架",
+ desc:"3~5 篇 PDF 扔进去，产出对比表和综述大纲。",
+ prompt:"对比本文件夹里的所有 PDF 文献：\n1. 制作一张对比表：研究人群 / 干预或暴露 / 结局指标 / 主要结论 / 证据等级\n2. 按主题脉络（不要按文章罗列）拟一份综述大纲\n3. 指出目前研究的空白点和矛盾之处\n\n禁止编造任何未提供的内容；需要补充的文献请标注【建议检索：关键词】。",
+ note:"AI 建议补充的文献只是“检索线索”，不是文献本身——用前必须去 PubMed 核实存在。"},
+{em:"📊",tag:"Claude Code",title:"场景 3 · 甩一个 Excel，让它自己分析",
+ desc:"数据脱敏后丢给它：描述、检验、出图、三线表，一条龙。你一行代码都不用看。",
+ prompt:"这是我的实验数据 data.csv（已脱敏）。请：\n① 描述数据结构、样本量和缺失情况\n② 做分布检查（正态性），据此为组间比较选择合适的检验方法，并说明理由\n③ 输出结果：论文三线表 + 箱线图（图保存到本文件夹）\n④ 用一段话写出可用于论文“统计学方法”章节的文字\n\n我零编程基础：代码你自己写、自己运行，报错自己修，别让我碰。",
+ note:"上传前自查脱敏（见第 6 课红线）。保持默认模型档（flash）就够；别切 opus 档——会被映射为 v4-pro 计费，贵约 4.5 倍。"},
+{em:"✒️",tag:"两者皆可",title:"场景 4 · SCI 润色与审稿人回复",
+ desc:"逐句润色保持原意；起草有理有据的 response letter。",
+ prompt:"请将下面的摘要逐句润色为地道的学术英语：保持原意，不添加未提及的结论，不夸大，并简注每处修改的理由。\n\n【粘贴你的摘要】",
+ prompt2:"你是我的论文回复信助手。审稿人意见如下：【粘贴意见】。请起草逐点回应：礼貌、有理有据、能引用论文原文支持，必要时建议补充实验/分析并说明计划。先给我回应策略，再给成稿。",
+ note:"润色用 flash 即可；逻辑复杂的 rebuttal 可考虑 v4-pro（贵些但更稳）。"},
+{em:"📝",tag:"两者皆可",title:"场景 5 · 期末复习出题官",
+ desc:"把讲义喂给它，先做题后对答案，AI 讲师上线。",
+ prompt:"基于我提供的讲义出题：20 道单选题 + 2 道病例分析题，难度对标【考研西医综合/执业医师】。\n规则：先只给题目；我全部作答后，再逐题给答案、解析和我的易错点总结。",
+ note:"可以追加：“把错题知识点做成 Anki 卡片（正面问题/背面要点）导出为 csv”。"},
+{em:"🎨",tag:"Claude Code",title:"场景 6 · 机制图与组会 PPT",
+ desc:"通路机制讲解 + 8 页组会汇报大纲，一步到位。",
+ prompt:"任务一：把【某信号通路】整理成通俗讲解：机制链条用“A → B → C”式文字图 + 一张流程示意（mermaid），并说明它在【某疾病】中的临床意义。\n任务二：据此生成 8 页组会汇报 PPT 大纲，每页给标题、要点和讲稿提示。",
+ note:"想要成品 PPT 文件可以再追一句“把大纲生成为 PPTX 文件存到本文件夹”——Agent 能直接交付文件。"},
+{em:"🏖",tag:"免费App优先",title:"场景 7 · 生活百事通（省钱姿势）",
+ desc:"日常闲聊别烧 API——用官方免费 App；需要“交付文件”时才请 Agent 出山。",
+ prompt:"帮我规划十一 3 天青岛行程：两人预算 3000 元，喜欢人文和小众海景，怕排队，不吃香菜。输出每日时间表（含交通衔接）+ 每天两家备选餐厅 + 雨天备案。",
+ note:"凡是“聊聊天、问知识”→ 免费官方 App；凡是“要文件成品（行程表.xlsx、PPT、对比表）”→ Claude Code。这就是省钱分工。"},
+{em:"🎤",tag:"两者皆可",title:"场景 8 · VOCALOID 创作搭子",
+ desc:"写词、逐字拆音、PV 分镜、曲目考据——给你的 Producer 工作流外挂一个大脑。",
+ prompt:"你是我的 VOCALOID 创作顾问。我要写一首歌：主题【夏夜最后一次烟花大会的告白】，风格靠近 DECO*27（轻快里带一点丧）。\n请：\n① 写一版日文歌词（两段主歌 + 副歌），每句附中文意思和罗马音\n② 标注你用了哪些标志性的语气词和断句手法\n③ 建议曲速（BPM）、调式，以及适合的虚拟歌手和音源版本，说明理由",
+ prompt2:"把下面这段中文歌词逐字拆成调音用的音节（声母+韵母），排成 VS 编辑器里方便直接复制的表格，并单独标注易炸音、鼻音和需要气声处理的位置：【粘贴歌词】",
+ note:"⚠️ 让它整理 P 主曲目/专辑/活动年表时，信息必须逐条核实——AI 会一本正经地编造不存在的单曲和发售日期（第 6 课的红线在哪个圈子都适用）。自己找灵感无妨；要写进百科、投稿文案前，先去 Vocaloid Wiki 或官方渠道对一遍。"}
+];
+
+const HELPS=[
+{t:"提示 401 / 认证失败（Authentication Error）",b:"Key 填错了。检查三处：① 复制时有没有带多余的空格/换行；② 是不是把 DeepSeek 的 Key 填到了别家；③ Key 有没有被删掉（回平台 API Keys 页看一眼）。改完保存后<b>重启软件</b>再试。"},
+{t:"提示 402 / 余额不足（Insufficient Balance）",b:"卡里没钱了。回 platform.deepseek.com 充值即可，10 元就能续命很久。顺路看下「用量」页，确认没有异常消耗。"},
+{t:"提示 429 / 请求太频繁（Rate Limit）",b:"相当于“专家门诊限号”。等 1 分钟再发。若是 Agent 自己疯狂重试导致，按停任务，检查指令是不是有死循环（比如让它“不断刷新直到……”）。"},
+{t:"界面里找不到 deepseek 模型 / 模型列表是空的",b:"九成是 Base URL 填错。必须是 Anthropic 兼容端点：<code>https://api.deepseek.com/anthropic</code>（<b>以 /anthropic 结尾</b>，不是 /v1）。在 Claude Code 里也可输入 <code>/model</code> 手动选择 deepseek-flash。"},
+{t:"Claude Code 打不开配置入口 / 配置总不生效",b:"<b>首选且唯一推荐：CC Switch</b>——装机向导第 2 步有手把手教学（添加 DeepSeek 供应商 → 保存 → 启用）。其他两条是应急：<br>② <b>AI装机体检助手</b>（配套文件，双击）→ 菜单 1 一键写入推荐配置（写入前自动备份）；<br>③ 命令行老用户：「一键配置环境变量.bat」（setx 方案）。写完务必重启 Claude Code 再验。"},
+{t:"DSH 连不上 / 不出结果",b:"依次检查：Settings → Models 里 DeepSeek 的 Key 是否已保存；余额是否充足；网络是否正常。社区桌面版偶有更新延迟，重启软件或换官方预览版试试。"},
+{t:"怀疑 Key 泄露了怎么办",b:"立即到 platform.deepseek.com → API Keys → <b>删除那把 Key</b>，再创建新的填回软件。宁可错杀。平时：Key 不发人、不截图、不进聊天记录。"},
+{t:"价格会不会变？哪里查权威价格？",b:"会变。本教室价格核实于 2026 年 10 月，权威价格永远看官方：<code>api-docs.deepseek.com/zh-cn/quick_start/pricing</code>。涨价一般提前公告，学生用量级影响很小。"},
+{t:"什么是 .md 文件？我打不开它",b:".md = Markdown = “带格式的记事本”，用记事本/任意文本编辑器都能打开。你唯一会遇到的 .md 是 CLAUDE.md（AI 人设文件），装机向导第 4 步有手把手教学。其余 .md 一律不用管。"},
+{t:"双击「①先双击我-开箱向导.bat」没反应 / 一闪而过 / 被拦截？",b:"依次试：① 杀毒软件提示时选「允许」——它只读取本文件夹并调用官方安装包，不碰其他任何东西；② 右键该文件 → 以管理员身份运行；③ 还不行就双击 配套文件\AI装机体检助手-双击我.bat（功能基本等价：体检+一键写入配置+打开下载页）；④ 完全手动路线：看 安装包\安装说明.txt，按 ①②③ 顺序双击即可。"},
+{t:"自检台/查余额提示“网络直连未成功”，是我配置错了吗？",b:"大概率不是。浏览器直连 API 可能被网络代理或浏览器对本地页面的跨域策略拦住——<b>这不代表你的密钥有问题</b>。兜底验证法永远有效：打开 Claude Code 发一句“你好”，能收到回复 = 配置成功。"},
+{t:"在教学程序里输入 API Key 安全吗？",b:"本程序是完全离线的本地网页：密钥只存在当前页面的内存里，<b>关闭页面即消失</b>，不写入任何文件、不发给任何第三方——验证请求由你的浏览器直接发往 DeepSeek 官方域名 api.deepseek.com。公用电脑上用完记得关页面即可。"},
+{t:"「AI装机体检助手」是什么？怎么用？",b:"工具包配套文件里的<b>真·体检程序</b>（双击「AI装机体检助手-双击我.bat」运行）。它直接检查你的电脑：① 装没装 Claude Code / CC Switch / DSH（含命令行和注册表探测）；② 真的读取 <code>~/.claude/settings.json</code> 检查服务器地址和密钥（密钥掩码显示）——如果地址还指向 api.anthropic.com，它会告诉你这就是「要求登录」的根源；③ 可选联网体检：验证密钥、查余额、发一条真实测试消息。还能一键写入推荐配置（自动备份旧的）、直接打开各软件官方下载页。装机第 2、3 步完成后各跑一遍，全绿 ✔ 就稳了。它只在本机运行，密钥仅用于直连 DeepSeek 官方接口。"},
+{t:"验证显示我的 CLAUDE.md 是 .txt / 乱码，怎么修？",b:"两条路：① 最省事——用第 4 步的「一键下载 CLAUDE.md」按钮重新获取（自动正确）；② 手动——记事本另存为时：保存类型选“所有文件”，文件名输 CLAUDE.md，编码选 UTF-8。改完拖回验收框复测。"}
+];
+
+/* ================= 状态 ================= */
+if("scrollRestoration" in history)history.scrollRestoration="manual"; /* 每次打开都从顶部开始，不恢复上次滚动位置 */
+const _saved=JSON.parse(localStorage.getItem("aiClassroom")||'{}');const store={quiz:_saved.quiz||{},checks:_saved.checks||{},verified:_saved.verified||{}};
+const save=()=>localStorage.setItem("aiClassroom",JSON.stringify(store));
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),1800)}
+function go(p){$$(".page").forEach(x=>x.classList.remove("on"));$("#page-"+p).classList.add("on");$$("nav button").forEach(b=>b.classList.toggle("on",b.dataset.p===p));window.scrollTo({top:0});sideCtx(p)}
+$$("nav button").forEach(b=>b.onclick=()=>go(b.dataset.p));
+$$("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+
+/* ================= 课程渲染 ================= */
+const lwrap=$("#lessons");
+LESSONS.forEach(L=>{
+ const d=document.createElement("div");d.className="lesson"+(store.quiz[L.id]?" done":"");
+ d.innerHTML=`<div class="lhead"><span class="em">${L.em}</span><div class="t"><h3>${L.title}</h3><small>${L.sub}</small></div><span class="st">${store.quiz[L.id]?"✓ 已完成":"未学习"}</span></div><div class="lbody">
+ ${L.blocks.map(b=>b.box?`<div class="box ${b.box}"><b>${b.t}</b>${b.p}</div>`:`<p style="font-size:14.5px;margin:10px 0">${b.p}</p>`).join("")}
+ <div class="quiz"><h4>🎯 课后小测（全对才解锁“已完成”）</h4>
+ ${L.quiz.map((q,i)=>`<div class="qitem" data-l="${L.id}" data-q="${i}"><div class="q">${i+1}. ${q.q}</div>
+ ${q.o.map((o,j)=>`<div class="opt" data-j="${j}">${String.fromCharCode(65+j)}. ${o}</div>`).join("")}
+ <div class="qexp">💡 ${q.exp}</div></div>`).join("")}
+ </div></div>`;
+ d.querySelector(".lhead").onclick=()=>d.classList.toggle("open");
+ lwrap.appendChild(d);
+ const passed={};
+ d.querySelectorAll(".qitem").forEach(qi=>{
+  qi.querySelectorAll(".opt").forEach(op=>op.onclick=()=>{
+   const qi_=qi.dataset.q,j=+op.dataset.j,q=L.quiz[qi_];
+   op.classList.remove("wrong");
+   qi.querySelector(".qexp").style.display="block";
+   if(j===q.a){
+    op.classList.add("right");passed[qi_]=true;
+    if(L.quiz.every((x,i)=>passed[i])&&!store.quiz[L.id]){
+     store.quiz[L.id]=1;save();d.classList.add("done");
+     d.querySelector(".st").textContent="✓ 已完成";toast("🎉 本课通过！");refresh();
+    }
+   }else{
+    op.classList.add("wrong");toast("不对哦，看下方提示再试一次 💡");
+   }
+  });
+ });
+});
+
+/* ================= 装机渲染 ================= */
+const swrap=$("#setupsteps");
+SETUP.forEach(S=>{
+ const d=document.createElement("div");d.className="step";
+ d.innerHTML=`<h3>${S.em} ${S.title}</h3>
+ ${S.pre?`<div class="box analogy" style="margin:6px 0 10px"><b>${S.pre.t}</b>${S.pre.b}</div>`:""}
+ ${S.items.map(it=>`<label class="chk${store.checks[it.id]?" cdont":""}"><input type="checkbox" data-c="${it.id}" ${store.checks[it.id]?"checked":""}><span>${it.t}</span>${store.verified[it.id]?'<b class="vmark">✔机器已验证</b>':""}</label>`).join("")}
+ ${S.note?`<div class="box analogy" style="margin-top:10px"><b>📌 说明</b>${S.note}</div>`:""}
+ ${S.extra==="claude"?`<div class="copywrap"><pre id="claudemd"></pre><button class="btn blue" id="copymd">📋 复制模板（配合手动另存为教学）</button> <button class="btn" id="dlmd">⬇️ 一键下载 CLAUDE.md（推荐，杜绝保存错误）</button><div class="dropzone" id="mdzone">🧪 交作业验收：把你保存/下载好的 CLAUDE.md 拖到这里（或点击选择文件），我来自动检查文件名、编码和内容</div><input type="file" id="mdfile" accept=".md,.txt" style="display:none"><div id="mdresult"></div></div>`:""}
+ ${S.extra==="apikey"?`<div id="keywidget"></div>`:""}`;
+ swrap.appendChild(d);
+});
+$("#claudemd").textContent=CLAUDE_MD;
+$("#copymd").onclick=()=>copyText(CLAUDE_MD,"人设模板已复制！推荐改用旁边的「一键下载」，或在记事本另存为 CLAUDE.md（保存类型选'所有文件'，编码 UTF-8）");
+swrap.addEventListener("change",e=>{
+ const c=e.target.closest("input[data-c]");if(!c)return;
+ store.checks[c.dataset.c]=c.checked?1:0;save();
+ c.closest("label").classList.toggle("cdone",c.checked);refresh();
+});
+
+/* ================= 引导与纠错：密钥自检 / 文件验收 / 余额查询 ================= */
+let USERKEY="";
+const boxHTML=(cls,t,b)=>'<div class="box '+cls+'"><b>'+t+'</b>'+b+'</div>';
+const okB=(t,b)=>boxHTML("okbox",t,b),warnB=(t,b)=>boxHTML("warnbox",t,b),errB=(t,b)=>boxHTML("dangerbox",t,b);
+const netB=w=>warnB("⚠ 网络直连未成功（"+w+"）","浏览器直连 api.deepseek.com 失败，常见原因：网络代理、或浏览器对本地页面的跨域限制。<b>这不代表你的密钥或配置有问题！</b>兜底验证法：打开 Claude Code 发送“你好”，能收到回复即为配置成功。");
+function fetchT(url,opt){const c=new AbortController();const h=setTimeout(()=>c.abort(),20000);return fetch(url,Object.assign({signal:c.signal},opt)).finally(()=>clearTimeout(h))}
+function setCheck(id,val){store.checks[id]=val?1:0;save();const inp=document.querySelector('input[data-c="'+id+'"]');if(inp){inp.checked=!!val;inp.closest("label").classList.toggle("cdone",!!val)}refresh()}
+function markVerified(id){store.verified[id]=1;save();setCheck(id,true)}
+function parseBal(j){try{const b=(j.balance_infos||[]).find(x=>x.currency==="CNY")||j.balance_infos[0];return b?parseFloat(b.total_balance):NaN}catch(e){return NaN}}
+function keyStatus(){const s=$("#keystat");const k=USERKEY;
+ if(!k){s.textContent="等待输入…";s.style.color="var(--sub)";return}
+ if(/^sk-[A-Za-z0-9]{20,64}$/.test(k)){s.textContent="✓ 格式正确（sk- 开头），点「开始自检」";s.style.color="var(--ok)"}
+ else if(k.indexOf("sk-")===0){s.textContent="✗ 以 sk- 开头但长度/字符异常：可能只复制了一半，回平台重新完整复制";s.style.color="var(--red)"}
+ else{s.textContent="✗ 密钥应以 sk- 开头——你粘贴的可能不是 API Key（登录密码/手机号都不是 Key）";s.style.color="var(--red)"}}
+async function runSelfTest(){
+ const out=$("#testout");
+ if(!/^sk-[A-Za-z0-9]{20,64}$/.test(USERKEY)){out.innerHTML=errB("密钥格式不对","先按上方红字提示修正，再点自检。");return}
+ out.innerHTML=boxHTML("analogy","⏳ 自检进行中…","正在由你的浏览器直连官方 api.deepseek.com（最长等 20 秒）");
+ let html="",balOK=false;
+ try{
+  const r=await fetchT("https://api.deepseek.com/user/balance",{headers:{Authorization:"Bearer "+USERKEY}});
+  if(r.status===401){out.innerHTML=errB("401：密钥无效","平台不认这把钥匙，两种可能：① 复制时多了/少了字符——回 platform.deepseek.com 的 API Keys 页重新完整复制；② 这把 Key 已被删除——重新创建一把。改好后回来重测，测过才算完成 s1c。");return}
+  const bal=parseBal(await r.json().catch(()=>({})));
+  if(isNaN(bal)){html+=warnB("余额接口返回异常","跳过余额判断，继续点火测试。")}
+  else{balOK=true;
+   if(bal>0){markVerified("s1c");markVerified("s1b");
+    html+=okB("密钥有效 ✓ 余额 ¥"+bal.toFixed(2),"已自动勾选「充值」和「创建 Key」并标记机器验证。以后查费用就来这里：platform.deepseek.com → 用量。")}
+   else{markVerified("s1c");
+    html+=okB("密钥有效 ✓ 但余额为 ¥0.00","先去充值 ¥20 再继续——否则一会儿在 Claude Code 里会报「402 余额不足」。提前见识最常见的报错，以后遇到不慌。")}
+  }
+ }catch(e){html+=netB("查余额")}
+ if(balOK){
+  try{
+   const r2=await fetchT("https://api.deepseek.com/chat/completions",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+USERKEY},body:JSON.stringify({model:"deepseek-flash",messages:[{role:"user",content:"这是一次连接测试，请只回复四个字：连接成功"}],max_tokens:20,stream:false})});
+   if(r2.status===402)html+=warnB("402：余额不足","充值后重测。");
+   else if(r2.status===429)html+=warnB("429：触发限速","一分钟后再试即可，不影响后续使用。");
+   else if(!r2.ok){let m="";try{const j=await r2.json();m=(j.error&&j.error.message)||""}catch(e){}
+    html+=errB("点火测试未通过（HTTP "+r2.status+"）",(m||"未知错误")+"。截图这段提示去「急救站」对号入座。")}
+   else{const j2=await r2.json();
+    const rep=(j2.choices&&j2.choices[0]&&j2.choices[0].message&&j2.choices[0].message.content)||"";
+    const u=j2.usage||{};const cost=(u.prompt_tokens||0)/1e6*1+(u.completion_tokens||0)/1e6*4;
+    html+=okB("点火测试成功 ✓","模型回复：「"+rep+"」<br>本次消耗：输入 "+(u.prompt_tokens||0)+" + 输出 "+(u.completion_tokens||0)+" tokens ≈ <b>¥"+cost.toFixed(5)+"</b>——不到一分钱。这就是按 token 计费的直观一课：你“雇佣”的 AI 已到岗，现在去装 Claude Code（第 2 步）。")}
+  }catch(e){html+=netB("发测试消息")}
+ }
+ out.innerHTML=html;
+}
+function buildKeyWidget(){const w=$("#keywidget");if(!w)return;
+ w.innerHTML='<div class="box analogy" style="margin-top:12px"><b>🤖 密钥自检台（机器帮你查作业）</b>把刚生成的 API Key 粘到下面，本页将直连 DeepSeek 官方接口做体检：① 格式检查 ② 查余额 ③ 发一条真实测试消息（顺便亲眼看看 token 计费）。<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><input id="keyin" type="password" placeholder="sk- 开头的 API Key" style="flex:1;min-width:220px;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-family:Consolas,monospace;font-size:14px"><button class="btn ghost" id="keyeye">👁 显示</button><button class="btn" id="keytest">🚀 开始自检</button></div><div id="keystat" style="font-size:13px;margin-top:6px">等待输入…</div><div id="testout"></div><p style="font-size:12px;color:var(--sub);margin-top:8px">🔒 密钥只保存在本页内存中，关闭页面即消失；验证请求由浏览器直发官方域名 api.deepseek.com，不经过任何第三方。公用电脑上用完请关闭页面。</p></div>';
+ $("#keyin").oninput=e=>{USERKEY=e.target.value.replace(/\s+/g,"");keyStatus()};
+ $("#keyeye").onclick=()=>{const i=$("#keyin");const show=i.type==="password";i.type=show?"text":"password";$("#keyeye").textContent=show?"🙈 隐藏":"👁 显示"};
+ $("#keytest").onclick=runSelfTest;
+}
+function validateClaudeFile(f){
+ const res=$("#mdresult");const name=f.name;
+ const fail=(t,b)=>{res.innerHTML=errB(t,b)};
+ if(/^claude\.md\.txt$/i.test(name))return fail("文件名多带了 .txt（新手最常见错误）","你存成了「CLAUDE.md.txt」，它不是 CLAUDE.md。两个修法：① 推荐——点上方「一键下载 CLAUDE.md」重新获取；② 手动——先让 Windows 显示扩展名（资源管理器 → 查看 → 勾选“文件扩展名”），再右键文件重命名，删掉末尾的 .txt");
+ if(!/^claude\.md$/i.test(name))return fail("文件名不对","应为 CLAUDE.md，你的是「"+name+"」。右键 → 重命名 → 输入 CLAUDE.md");
+ const rd=new FileReader();
+ rd.onload=()=>{const t=String(rd.result||"");
+  if(t.indexOf("\uFFFD")>=0)return fail("编码不是 UTF-8（内容已乱码）","记事本另存为时编码选成了 ANSI。修法：点上方「一键下载」重新获取，或另存为时把编码改为 UTF-8");
+  if(t.length<150)return fail("内容太短","像是空文件或只粘贴了一部分。请用「复制模板」重新粘贴完整内容，或直接用「一键下载」");
+  if(t.indexOf("医学研究生")<0||t.indexOf("红线")<0)return fail("内容不像是人设模板","缺少关键段落（“我是谁”/“红线”）。请粘贴完整模板，或直接用「一键下载」");
+  markVerified("s4b");markVerified("s4c");
+  res.innerHTML=okB("验收通过 ✓","文件名正确 · UTF-8 编码 · 内容完整。已自动勾选「复制」和「另存为」两项（机器验证）。最后一步：把这个文件放进你的工作文件夹，然后在 Claude Code 里问一句“你知道我是什么背景吗？”来完成 s4d");
+ };
+ rd.readAsText(f,"utf-8");
+}
+function buildClaudeWidget(){
+ const dl=$("#dlmd");if(!dl)return;
+ dl.onclick=()=>{const b=new Blob([CLAUDE_MD],{type:"text/markdown;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="CLAUDE.md";document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(a.href),3000);toast("已下载 CLAUDE.md，把它移到你的工作文件夹，然后拖回来验收");$("#mdzone").scrollIntoView({behavior:"smooth",block:"center"})};
+ const zone=$("#mdzone"),fin=$("#mdfile");
+ zone.onclick=()=>fin.click();
+ fin.onchange=()=>{if(fin.files[0])validateClaudeFile(fin.files[0])};
+ zone.ondragover=e=>{e.preventDefault();zone.classList.add("drag")};
+ zone.ondragleave=()=>zone.classList.remove("drag");
+ zone.ondrop=e=>{e.preventDefault();zone.classList.remove("drag");if(e.dataTransfer.files[0])validateClaudeFile(e.dataTransfer.files[0])};
+}
+buildKeyWidget();buildClaudeWidget();
+/* 费用页：实时余额 */
+$("#balbtn").onclick=async()=>{
+ const k=$("#balkey").value.replace(/\s+/g,"");const out=$("#balout");
+ if(!/^sk-[A-Za-z0-9]{20,64}$/.test(k)){out.innerHTML=errB("密钥格式不对","应为 sk- 开头的一串字符，检查是否复制完整。");return}
+ out.innerHTML=boxHTML("analogy","⏳ 查询中…","");
+ try{
+  const r=await fetchT("https://api.deepseek.com/user/balance",{headers:{Authorization:"Bearer "+k}});
+  if(r.status===401){out.innerHTML=errB("401：密钥无效","回 platform.deepseek.com 重新复制或重建 Key。");return}
+  const bal=parseBal(await r.json().catch(()=>({})));
+  if(isNaN(bal)){out.innerHTML=warnB("返回格式异常","请直接到 platform.deepseek.com 首页查看余额。");return}
+  const perMonth=parseFloat($("#cresult").textContent.replace(/[^\d.]/g,""))||20;
+  const months=bal/perMonth;
+  out.innerHTML=okB("当前余额：¥"+bal.toFixed(2),"按你上方滑块的使用习惯（约 ¥"+perMonth.toFixed(0)+"/月）估算，还能用 <b>"+months.toFixed(1)+" 个月</b>。数据来自 DeepSeek 官方接口；密钥未存储，关页即忘。");
+ }catch(e){out.innerHTML=netB("查余额")}
+};
+
+/* ================= 场景渲染 ================= */
+const scwrap=$("#scenewrap");
+SCENES.forEach((S,i)=>{
+ const d=document.createElement("div");d.className="sccard";
+ d.innerHTML=`<h3>${S.em} ${S.star?"<span style='color:var(--warn)'>★</span> ":""}${S.title}</h3>
+ <div style="margin:6px 0"><span class="tag">🖥 ${S.tag}</span></div>
+ <p>${S.desc}</p>
+ <pre data-prompt="${i}"></pre>
+ <button class="btn" data-copy-btn="${i}">📋 一键复制提示词</button>
+ ${S.prompt2?`<pre data-prompt2="${i}" style="margin-top:12px"></pre><button class="btn ghost" data-copy-btn2="${i}">📋 复制追问版（审稿人回复）</button>`:""}
+ <div class="box warnbox" style="margin-top:12px"><b>⚠️ 注意</b>${S.note}</div>`;
+ scwrap.appendChild(d);
+ d.querySelector("[data-prompt]").textContent=S.prompt;
+ if(S.prompt2)d.querySelector("[data-prompt2]").textContent=S.prompt2;
+});
+document.addEventListener("click",e=>{
+ const b=e.target.closest("[data-copy-btn]"),b2=e.target.closest("[data-copy-btn2]"),c=e.target.closest(".cpy");
+ if(b)copyText(SCENES[+b.dataset.copyBtn].prompt,"提示词已复制！粘贴到 Claude Code / DSH 即用");
+ if(b2)copyText(SCENES[+b2.dataset.copyBtn2].prompt2,"追问版已复制！");
+ if(c)copyText(c.dataset.copy,"已复制");
+});
+function copyText(t,msg){
+ if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(()=>toast(msg)).catch(()=>fallbackCopy(t,msg))}
+ else fallbackCopy(t,msg);
+}
+function fallbackCopy(t,msg){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast(msg)}catch(e){toast("复制失败，请手动全选复制")}document.body.removeChild(ta)}
+
+/* ================= 急救站 ================= */
+const hwrap=$("#helpwrap");
+HELPS.forEach(h=>{const d=document.createElement("details");d.innerHTML=`<summary>🚑 ${h.t}</summary><div class="dbody">${h.b}</div>`;hwrap.appendChild(d)});
+
+/* ================= 费用计算器 ================= */
+const PRICE={flash:{off:{in:1,out:4},on:{in:2,out:8}},pro:{off:{in:4.5,out:13.5},on:{in:9,out:27}}};
+const UNIT={paper:{in:20000,out:5000},task:{in:80000,out:25000},big:{in:1000000,out:200000}};
+function calc(){
+ const p=+$("#cpapers").value,t=+$("#ctasks").value,b=+$("#cbig").value;
+ const m=$("#cmodel").value,tier=$("#ctier").value,pr=PRICE[m][tier];
+ $("#vpapers").textContent=p+" 篇/天";$("#vtasks").textContent=t+" 个/天";$("#vbig").textContent=b+" 次/月";
+ const c=x=>(x.in/1e6*pr.in+x.out/1e6*pr.out);
+ const mCost=30*(p*c(UNIT.paper)+t*c(UNIT.task))+b*c(UNIT.big);
+ $("#cresult").textContent="≈ ¥ "+mCost.toFixed(mCost<10?1:0)+" / 月";
+ $("#cdetail").textContent=`明细：文献速读 ¥${(30*p*c(UNIT.paper)).toFixed(1)} + 中型任务 ¥${(30*t*c(UNIT.task)).toFixed(1)} + 整晚大活 ¥${(b*c(UNIT.big)).toFixed(1)}（${m==="flash"?"flash":"v4-pro"} · ${tier==="off"?"空闲半价档":"高峰档"}，30天估算）`;
+ const cmp=[{n:"DeepSeek 按量（你）",v:mCost,col:"var(--teal)"},{n:"GLM Coding Plan Lite 包月",v:118,col:"#94a3b8"},{n:"ChatGPT Plus",v:150,col:"#94a3b8"}];
+ $("#ccmp").innerHTML=cmp.map(x=>`<div class="cmpbar"><div class="lab"><span>${x.n}</span><span>¥${x.v.toFixed(0)}/月</span></div><div class="bar"><div class="fill" style="width:${Math.min(100,x.v/150*100)}%;background:${x.col}"></div></div></div>`).join("")
+ +`<p class="lead" style="margin-top:10px">${mCost<30?"很省：按量付费对学生非常友好，先充 20 元能玩很久。":mCost<80?"中等强度：建议按月充 50~100 元，每周看一眼用量页。":"重度使用：论文冲刺期正常水平。可考虑把整晚大活集中到周末（半价），并保持 flash 档。"}</p>`;
+}
+["cpapers","ctasks","cbig","cmodel","ctier"].forEach(id=>{$("#"+id).addEventListener("input",calc);$("#"+id).addEventListener("change",calc)});
+calc();
+
+/* ================= 进度 ================= */
+function refresh(){
+ const total=LESSONS.length+SETUP.reduce((a,s)=>a+s.items.length,0);
+ const done=LESSONS.filter(l=>store.quiz[l.id]).length+Object.values(store.checks).filter(Boolean).length;
+ const pct=Math.round(done/total*100);
+ $("#pbar").style.width=pct+"%";$("#ptxt").textContent=`学习进度 ${pct}%（课程 ${LESSONS.filter(l=>store.quiz[l.id]).length}/6 · 装机 ${Object.values(store.checks).filter(Boolean).length}/${SETUP.reduce((a,s)=>a+s.items.length,0)}）`;
+ $("#homeprogress").innerHTML=`<div class="grid g2">
+ <div class="box ${LESSONS.every(l=>store.quiz[l.id])?"okbox":"analogy"}"><b>📚 课程</b>${LESSONS.map(l=>`${store.quiz[l.id]?"✅":"⬜"} ${l.title}`).join("<br>")}</div>
+ <div class="box ${Object.values(store.checks).filter(Boolean).length>=SETUP.reduce((a,s)=>a+s.items.length,0)?"okbox":"analogy"}"><b>🛠 装机（其中 ${Object.keys(store.verified).length} 项已机器验证）</b>${SETUP.map(s=>`${s.title.replace(/第 (\d) 步 ·/,"第$1步")}：${s.items.filter(i=>store.checks[i.id]).length}/${s.items.length}`).join("<br>")}<br><br>${Object.values(store.checks).filter(Boolean).length>=SETUP.reduce((a,s)=>a+s.items.length,0)?"🎓 毕业了！去场景弹药库实战吧":"继续加油，照着向导逐项打勾"}</div></div>`;
+ sidePlan();
+}
+refresh();
+
+/* ================= 开箱实况：与 wizard.ps1 状态文件联动 ================= */
+const WSTEPS=[{n:1,em:"🧱",t:"Node.js 运行环境"},{n:2,em:"🤖",t:"Claude Code 本体"},{n:3,em:"🔀",t:"CC Switch 换发动机工具"},{n:4,em:"🔑",t:"DeepSeek 密钥配置"}];
+const WLAB={pending:"待开始",running:"进行中…",waiting:"🖱️ 等你在弹出的安装窗口里点「下一步」",need_key:"🔑 等你粘贴密钥（看下方教学卡）",ok:"✅ 完成",skipped:"⏭ 已跳过（以后可配）",error:"❌ 没成功——结束后看急救指引"};
+let wizTimer=null,wizKeyShown=false;
+function wizLoad(cb,errCb){
+ const s=document.createElement("script");
+ s.src="wizard-status.js?t="+Date.now();
+ s.onload=()=>cb(window.WIZARD_STATUS);s.onerror=errCb;
+ document.head.appendChild(s);setTimeout(()=>{if(s.parentNode)s.remove()},3000);
+}
+function renderWizard(st){
+ if(!st)return;
+ const doneCnt=WSTEPS.filter(x=>["ok","skipped"].includes((st.steps||{})["s"+x.n])).length;
+ $("#wizprog").style.width=(doneCnt/4*100)+"%";
+ $("#wizpct").textContent=st.phase==="done"?"✅ 开箱流程结束（"+doneCnt+"/4 就绪）":"⏳ 开箱进行中："+doneCnt+"/4 就绪 · 更新于 "+(st.ts||"");
+ const det=$("#wizdetail");
+ if(st.detail){det.style.display="block";det.innerHTML="<b>📌 当前动作</b>"+st.detail}else det.style.display="none";
+ $("#wizsteps").innerHTML=WSTEPS.map(x=>{
+  const s=(st.steps||{})["s"+x.n]||"pending";
+  const cls=s==="ok"?"okbox":s==="error"?"dangerbox":["running","waiting","need_key"].includes(s)?"warnbox":"box";
+  const run=["running","waiting","need_key"].includes(s)?" run":"";
+  return `<div class="wstep ${cls}${run}"><b>${x.em} 第${x.n}步 · ${x.t}</b>${WLAB[s]||s}</div>`;
+ }).join("");
+ const lg=$("#wizlog");
+ if(st.log&&st.log.length){lg.style.display="block";const atBottom=lg.scrollTop+lg.clientHeight>=lg.scrollHeight-30;lg.textContent=st.log.join("\n");if(atBottom)lg.scrollTop=lg.scrollHeight}
+ const needKey=(st.steps||{}).s4==="need_key";
+ if(needKey&&!wizKeyShown){wizKeyShown=true;$("#wizkey").style.display="block";$("#wizkey").scrollIntoView({behavior:"smooth",block:"start"})}
+ if(!needKey)$("#wizkey").style.display="none";
+ if(st.phase==="done"){$("#wizdone").style.display="block";$("#wizdonetext").textContent=st.detail||"环境已就绪。接下来：①「课程」把概念过一遍 → ②「场景弹药库」抄第一个作业。"}
+ sideLive(st);
+}
+function wizStartPolling(){if(wizTimer)return;wizTimer=setInterval(()=>{wizLoad(st=>renderWizard(st),()=>{})},1200)}
+function wizEnter(){if(!$("#page-wizard").classList.contains("on"))go("wizard");wizStartPolling();wizLoad(st=>renderWizard(st),()=>{})}
+function wizProbe(tries){
+ if(localStorage.getItem("wizardDoneSeen"))return;
+ /* 首次打开不再自动跳走页面：只开侧栏实况+顶部提示，用户留在首页最上方 */
+ wizLoad(st=>{if(st&&!localStorage.getItem("wizardDoneSeen")){wizStartPolling();renderWizard(st);toast("📦 检测到开箱向导进行中——进度见左侧「开箱实况」卡片，装完回首页继续学习")}},()=>{if(tries>0)setTimeout(()=>wizProbe(tries-1),1600)});
+}
+setTimeout(()=>wizProbe(3),700);
+
+/* ================= 左侧栏：现在干什么 ================= */
+function sideLive(st){
+ $("#side-live").style.display="block";$("#side-plan").style.display="none";
+ let a,cls="sa-run";
+ if(st.phase==="done"){a="✅ 开箱流程结束——全绿就直接点上方「课程」开始学习；有 ❌ 就去「急救站」";cls="sa-ok"}
+ else if((st.steps||{}).s4==="need_key"){a="🔑 你要做的：去拿密钥——主页面有图文教学卡和平台入口；拿到后回黑色窗口右键粘贴";cls="sa-key"}
+ else if(Object.values(st.steps||{}).includes("waiting")){a="🖱️ 你要做的：去刚弹出的安装窗口，一路点「下一步」，装完自动继续";cls="sa-wait"}
+ else{a="☕ 自动进行中，你什么都不用做，看下面的步骤变绿就行"}
+ $("#side-action").innerHTML=a;
+ $("#side-action").className="sideaction "+cls;
+ $("#side-steps").innerHTML=WSTEPS.map(x=>{
+  const s=(st.steps||{})["s"+x.n]||"pending";
+  const ic=s==="ok"?"✅":s==="error"?"❌":["running","waiting","need_key"].includes(s)?"⏳":"⬜";
+  return `<div>${ic} 第${x.n}步 ${x.t}</div>`;
+ }).join("");
+}
+function sidePlan(){
+ $("#side-plan").style.display="block";$("#side-live").style.display="none";
+ const ldone=LESSONS.filter(l=>store.quiz[l.id]).length;
+ const cdone=Object.values(store.checks).filter(Boolean).length;
+ const ctotal=SETUP.reduce((a,s)=>a+s.items.length,0);
+ $("#sidebar-prog").style.width=Math.round((ldone+cdone)/(LESSONS.length+ctotal)*100)+"%";
+ let next,g;
+ if(ldone<LESSONS.length){const l=LESSONS.find(x=>!store.quiz[x.id]);next="📚 下一步："+l.title;g="course"}
+ else if(cdone<ctotal){const s=SETUP.find(s2=>s2.items.some(i=>!store.checks[i.id]));const it=s.items.find(i=>!store.checks[i.id]);next="🛠 下一步：装机"+s.title.replace(/^第 (\d) 步 ·/," 第$1 步 ·").slice(0,26)+"…（清单项 "+it.id+"）";g="setup"}
+ else{next="🎬 全部就绪！去场景弹药库抄第一个作业：★ 文献速读三分钟";g="scenes"}
+ $("#side-next").innerHTML=`<b>${next}</b><br><button class="btn" style="margin-top:8px" onclick="go('${g}')">前往 →</button>`;
+ $("#side-todos").innerHTML=`<li>${ldone===6?"✅":"⬜"} 概念课：${ldone}/6</li><li>${cdone===ctotal?"✅":"⬜"} 装机清单：${cdone}/${ctotal}</li><li>💡 场景弹药库：随到随用</li>`;
+}
+sidePlan();
+
+/* ================= 侧栏上下文感知：进入不同页面自动切换专属内容 ================= */
+function jumpLesson(i){const ls=document.querySelectorAll(".lesson");if(ls[i]){ls[i].classList.add("open");ls[i].scrollIntoView({behavior:"smooth",block:"start"})}}
+function sideCtx(p){
+ const el=$("#side-ctx");if(!el)return;
+ clearInterval(window._sideCostT);
+ if(p==="wizard"){el.style.display="none";return}
+ el.style.display="block";
+ if(p==="home"){
+  el.innerHTML=`<h3>🧭 这一站：首页</h3><div class="box analogy" style="margin:6px 0"><b>新手 20 分钟路线</b>① 没跑过「①开箱向导」就先去跑（压缩包根目录）<br>② 上完 6 节课（每课 5 分钟）<br>③ 去「场景弹药库」抄 ★ 文献速读</div>`;
+ } else if(p==="course"){
+  el.innerHTML=`<h3>📚 课程进度（点击直达）</h3>`+LESSONS.map((l,i)=>`<div style="line-height:2.1;cursor:pointer;color:${store.quiz[l.id]?'var(--ok)':'inherit'}" onclick="jumpLesson(${i})">${store.quiz[l.id]?'✅':'⬜'} ${l.title.replace(/^第 \d 课 · /,'')}</div>`).join("");
+ } else if(p==="setup"){
+  el.innerHTML=`<h3>🛠 装机进度</h3>`+SETUP.map(s=>{const d=s.items.filter(i=>store.checks[i.id]).length;return `<div style="line-height:2.1">${d===s.items.length?'✅':'⬜'} ${s.title.replace(/ · /,'：')}</div>`}).join("")+`<div class="box warnbox" style="margin-top:6px"><b>捷径</b>先跑压缩包的「①开箱向导」，它自动完成大部分安装！</div>`;
+ } else if(p==="cost"){
+  el.innerHTML=`<h3>💰 费用速记</h3><div class="box okbox" style="margin:6px 0"><b>当前估算</b><span id="sidemonth" style="font-size:19px;font-weight:800;color:var(--teal-d)">--</span><br><small>（随主区滑块实时更新）</small></div>💡 晚上+周末一律半价<br>💡 追问同一批文献≈免费（缓存）<br>💡 娱乐闲聊用免费官方 App`;
+  const upd=()=>{const m=$("#cresult"),t=$("#sidemonth");if(m&&t)t.textContent=m.textContent};
+  upd();window._sideCostT=setInterval(upd,2000);
+ } else if(p==="scenes"){
+  el.innerHTML=`<h3>🎬 场景索引（${SCENES.length}）</h3>`+SCENES.map((s,i)=>`<div style="line-height:2.1">${s.star?'<b style="color:var(--warn)">★</b>':'·'} ${i+1}. ${s.title.replace(/场景 \d+ · /,'')}</div>`).join("")+`<div class="box analogy" style="margin-top:6px"><b>★ 新手第一枪</b>场景 1 文献速读：丢一篇 PDF，3 分钟出笔记</div>`;
+ } else if(p==="api"){
+  el.innerHTML=`<h3>🔌 API 实操速记</h3><div class="box analogy" style="margin:6px 0"><b>一句话</b>三个工具共用同一把 DeepSeek Key：Claude Code 读 settings.json，CC Switch 是它的图形版，DSH 在 Settings → Models 填。</div>💡 配置文件：<code>C:\\Users\\你\\.claude\\settings.json</code><br>💡 万能验证法：发一句"你好"`;
+ } else if(p==="help"){
+  el.innerHTML=`<h3>🚑 急救站（${HELPS.length} 条）</h3>最常翻牌：<br>${HELPS.slice(0,3).map(h=>'· '+h.t.replace(/[？?]$/,'')).join('<br>')}<br><br><small>点开主区对应条目按方抓药，90% 能自救。</small>`;
+ }
+}
+sideCtx("home");
+/* ===== 首次打开落在首页最上方 ===== */
+go("home");
+window.scrollTo(0,0);
+</script>
+</body>
+</html>

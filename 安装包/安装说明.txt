@@ -1,0 +1,54 @@
+【安装包文件夹说明】（2026-10-07 打包）
+
+这一摞安装包是为了让你不碰 GitHub、不碰 claude.ai 也能把环境装齐。
+（背景：claude.ai 在国内网络会被拦，提示 "region unavailable"；
+ GitHub 直连又慢。所以能离线的都给你离线了。）
+
+────────────────────────────────
+按这个顺序装（前两步只做一次）：
+
+① node-v22.23.3-x64.msi
+   Claude Code 的地基（Node.js 运行环境，来自华为云官方镜像）。
+   双击 → 一路"下一步"装完。不用管它是什么，装完基本不会再想起它。
+
+② 安装ClaudeCode-一键联网安装.bat
+   双击运行：它会自动把 npm 切到国内镜像（npmmirror），然后联网安装
+   Claude Code（约 1~3 分钟，走国内 CDN，不需要魔法上网）。
+   装出来的是一个"黑色终端窗口"——这是正常的！以后用它就是打字对话，
+   不需要写代码。
+
+③ CC-Switch-v4.0.4-Windows.msi
+   给 Claude Code "换发动机"的图形工具（切到 DeepSeek）。
+   双击安装。装完后打开它：右上角「+」→ 预设选 DeepSeek →
+   粘贴你的 sk- 密钥 → 保存并切换。完成。
+
+④ 全部装完后：回到「启动我-AI开箱教室.html」继续装机向导，
+   并双击 配套文件\AI装机体检助手 跑一遍，全绿 ✔ 即毕业。
+
+────────────────────────────────
+版本与校验信息（给帮你的人看）：
+- CC Switch v4.0.4（2026-10-07 发布）
+  sha256: d6dd46349fd0ec8fb76dac77fc8f2b95eb74cdea63a9ed1966e3e79f50be59fd
+  已与 GitHub 官方 Release 比对一致
+- Node.js v22.23.3 LTS x64，来源：华为云镜像 mirrors.huaweicloud.com/nodejs
+- Claude Code 由脚本②联网安装当时最新版（打包时为 2.1.292）
+  想要更新版可重跑脚本②，npm 会自动升级
+- DSH 桌面版没放进压缩包（体积大且属选装体验项）：
+  微软商店搜「DSH Desktop (Community)」或 GitHub rye567/dsh-desktop
+
+────────────────────────────────
+装到一半断了/报错了怎么办？
+→ 打开「启动我-AI开箱教室.html」→ 急救站，90% 的问题有自救办法。
+→ 或者跑 配套文件\AI装机体检助手，它会告诉你缺什么、下一步干什么。
+
+────────────────────────────────
+Plan C：所有 .bat 都被拦截/跑不动时的最后手段（纯手动，一定可行）
+1. 装 Node：双击 node-v22.23.3-x64.msi（MSI 安装器总是能装的）
+2. 开命令行：按 Win 键 → 输入 cmd → 回车（打开黑色窗口）
+3. 复制下面这一行，在黑色窗口里点鼠标右键（=粘贴），回车：
+
+   npm config set registry https://registry.npmmirror.com && npm install -g @anthropic-ai/claude-code
+
+4. 等它跑完（1~3 分钟），再双击装 CC-Switch-v4.0.4-Windows.msi，完事。
+   （这行命令只用到 npm 和 Node，它们随第 1 步的安装包一起装上，
+    不依赖你电脑上预装的任何工具；镜像走国内 CDN，不需要魔法上网。）
